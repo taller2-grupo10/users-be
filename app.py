@@ -31,7 +31,7 @@ firebase_admin.initialize_app(cred)
 
 @app.route("/")
 def hello_world():
-    return jsonify(hello="mate")
+    return jsonify(hello="staging")
 
 
 @app.route("/login", methods=["POST", "GET"])
