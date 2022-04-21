@@ -1,0 +1,10 @@
+[flake8]
+ignore =
+    # too many leading '#' for block comment
+    E266
+    # Do not use bare except
+    E722
+exclude =
+    .git,
+    __pycache__,
+    ./env
