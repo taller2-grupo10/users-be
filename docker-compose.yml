@@ -48,6 +48,8 @@ services:
       bash -c "python -m pytest"
     volumes:
       - ./:/usr/src/app/
+    env_file:
+      - ./test.env
     depends_on:
       - db_test
 
