@@ -38,4 +38,4 @@ jobs:
         tags: ${{secrets.DOCKER_HUB_USERNAME}}/test:latest
 
     - name: Run tests
-      run: docker-compose run test
+      run: docker-compose -f docker-compose-test.yml run test
