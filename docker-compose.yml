@@ -9,7 +9,7 @@ services:
     ports:
       - 5000:5000
     env_file:
-      - ./.env.dev
+      - ./project/.env.dev
     depends_on:
       - db
   db:
@@ -48,8 +48,6 @@ services:
       bash -c "python -m pytest"
     volumes:
       - ./:/usr/src/app/
-    env_file:
-      - ./test.env
     depends_on:
       - db_test
 
