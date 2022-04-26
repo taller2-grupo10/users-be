@@ -3,7 +3,7 @@ name: Test
 on: 
   workflow_call:
 
- push:
+  push:
     branches-ignore:
       - 'main'
       - 'staging'
