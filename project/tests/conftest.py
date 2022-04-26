@@ -37,7 +37,7 @@ class CustomTestClient(testing.FlaskClient):
 
 @pytest.fixture(scope="function")
 def test_client():
-    flask_app = create_app("flask_test.cfg")
+    flask_app = create_app("project.config.ConfigTest")
     flask_app.test_client_class = CustomTestClient
     # Create a test client using the Flask application configured for testing
     with flask_app.test_client() as testing_client:

@@ -27,3 +27,15 @@ class Config(object):
         "FIREBASE_AUTH_PROVIDER_X509_CERT_URL"
     )
     FIREBASE_CLIENT_X509_CERT_URL = os.getenv("FIREBASE_CLIENT_X509_CERT_URL")
+
+
+class ConfigTest(object):
+    SQLALCHEMY_DATABASE_URI = "postgresql://test_user:test_pass@db_test:5433/test_db"
+    SECRET_KEY = "bad_secret_key"
+    DEBUG = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Enable the TESTING flag to disable the error catching during request handling
+    # so that you get better error reports when performing test requests against the application.
+    TESTING = True
+    # Disable CSRF tokens in the Forms (only valid for testing purposes!)
+    WTF_CSRF_ENABLED = False
