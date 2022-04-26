@@ -5,6 +5,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 uri = os.getenv("DATABASE_URL")
 if uri and uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
+if not uri:
+    uri = "postgresql://users_be:users_be@localhost:5432/users_be_dev"
 
 
 class Config(object):
@@ -14,7 +16,9 @@ class Config(object):
     FIREBASE_TYPE = os.getenv("FIREBASE_TYPE")
     FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
     FIREBASE_PRIVATE_KEY_ID = os.getenv("FIREBASE_PRIVATE_KEY_ID")
-    FIREBASE_PRIVATE_KEY = f"-----BEGIN PRIVATE KEY-----\n{os.getenv('FIREBASE_PRIVATE_KEY')}\n-----END PRIVATE KEY-----\n".replace('\\n', '\n')
+    FIREBASE_PRIVATE_KEY = f"-----BEGIN PRIVATE KEY-----\n{os.getenv('FIREBASE_PRIVATE_KEY')}\n-----END PRIVATE KEY-----\n".replace(
+        "\\n", "\n"
+    )
     FIREBASE_CLIENT_EMAIL = os.getenv("FIREBASE_CLIENT_EMAIL")
     FIREBASE_CLIENT_ID = os.getenv("FIREBASE_CLIENT_ID")
     FIREBASE_AUTH_URI = os.getenv("FIREBASE_AUTH_URI")
