@@ -1,4 +1,4 @@
-name: Deploy Staging
+name: CI/CD - Deploy Staging
 
 on:
   push:
@@ -6,23 +6,17 @@ on:
       - staging
 
 jobs:
-  build:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    needs: test
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Test with pytest
-        run: |
-          pytest
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+      - name: Heroku deploy
+        uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: ${{secrets.HEROKU_APP_NAME_STAGING}}
