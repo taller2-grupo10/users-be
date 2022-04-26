@@ -14,7 +14,7 @@ class Config(object):
     FIREBASE_TYPE = os.getenv("FIREBASE_TYPE")
     FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
     FIREBASE_PRIVATE_KEY_ID = os.getenv("FIREBASE_PRIVATE_KEY_ID")
-    FIREBASE_PRIVATE_KEY = os.getenv("FIREBASE_PRIVATE_KEY").replace('\\n', '\n')
+    FIREBASE_PRIVATE_KEY = f"-----BEGIN PRIVATE KEY-----\n{os.getenv('FIREBASE_PRIVATE_KEY')}\n-----END PRIVATE KEY-----\n".replace('\\n', '\n')
     FIREBASE_CLIENT_EMAIL = os.getenv("FIREBASE_CLIENT_EMAIL")
     FIREBASE_CLIENT_ID = os.getenv("FIREBASE_CLIENT_ID")
     FIREBASE_AUTH_URI = os.getenv("FIREBASE_AUTH_URI")
