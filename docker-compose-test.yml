@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db_test:
+    image: postgres:13-alpine
+    volumes:
+      - pgdata_test:/var/lib/postgresql/_data/
+    environment:
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_pass
+      - POSTGRES_DB=test_db
+    expose:
+      - "5433"
+    ports:
+      - "5433:5433"
+    command: -p 5433
+
+  test:
+    image: python:3.8-alpine
+    build:
+      context: . 
+      dockerfile: DockerfileTest
+    command: >
+      bash -c "python -m pytest"
+    volumes:
+      - ./:/usr/src/app/
+    depends_on:
+      - db_test
+
+
+volumes:
+  pgdata_test:

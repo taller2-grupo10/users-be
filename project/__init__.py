@@ -11,9 +11,9 @@ migrate = Migrate()
 ######################################
 
 
-def create_app(config_filename=None):
+def create_app(config_obj=None):
     app = Flask(__name__)
-    app.config.from_object("project.config.Config")
+    app.config.from_object(config_obj)
     db.init_app(app)
     migrate.init_app(app, db)
 
