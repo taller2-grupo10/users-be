@@ -2,6 +2,11 @@ name: Test
 
 on: 
   workflow_call:
+    secrets:
+      DOCKER_HUB_USERNAME:
+        required: true
+      DOCKER_HUB_ACCESS_TOKEN:
+        required: true
 
   push:
     branches-ignore:
