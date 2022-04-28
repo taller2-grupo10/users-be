@@ -51,6 +51,7 @@ def init_database(test_client):
     # Create the database and the database table
     db.create_all()
     yield db  # Test
+    db.session.close()
     db.drop_all()
 
 

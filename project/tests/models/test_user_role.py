@@ -11,5 +11,5 @@ def test_create_user_role(init_database, _db):
     assert user_role.user_id == user.id
     assert user_role.role_id == role.id
 
-    assert user.roles == [role]
+    assert user.roles == [role.id]
     assert role.users == [user]

@@ -1,5 +1,7 @@
 from project.controllers.base_controller import BaseController
 from project.models.user import User
+from project.models.user_role import UserRole
+from project import db
 
 
 class UserAlreadyExists(Exception):
@@ -47,6 +49,11 @@ class UserController(BaseController):
             roles = list(map(int, roles.split(",")))
         except ValueError:
             raise ValueError("Roles must be integers")
-        new_user = User(uid=uid, roles=roles)
+
+        new_user = User(uid=uid)
         cls.save(new_user)
+        for role_id in roles:
+            ur = UserRole(role_id=role_id, user=new_user)
+            db.session.add(ur)
+        db.session.commit()
         return new_user
