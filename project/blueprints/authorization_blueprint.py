@@ -1,8 +1,7 @@
-from typing import Dict, List, Tuple
-from flask import Blueprint, request, jsonify, current_app
-from functools import wraps
-from project.models.user import User
+from flask import Blueprint, request
 from project.blueprints.token_check import check_token
+from project.controllers.user_controller import UserController, UserAlreadyExists
+
 
 authorization_blueprint = Blueprint("authorization_blueprint", __name__)
 
@@ -10,20 +9,22 @@ authorization_blueprint = Blueprint("authorization_blueprint", __name__)
 @authorization_blueprint.route("/signup", methods=["POST"])
 @check_token
 def sign_up():
-    uid = request.args.get("uid")
-    if not uid:
-        return {"message": "No uid provided"}, 400
-    # user = User(uid=uid)
-    # db.session.add(user)
-    # db.session.commit()
+    uid = request.json["uid"]
+    roles = request.json["roles"]
+    if not uid or not roles:
+        return {"message": "No uid/roles provided"}, 400
+    try:
+        UserController.create(uid, roles)
+    except (UserAlreadyExists, ValueError) as e:
+        return {"message": "Error while creating User"}, 400
     return {"message": "User created"}, 201
 
 
 @authorization_blueprint.route("/login", methods=["POST"])
 @check_token
 def login():
-    uid = request.args.get("uid")
-    user = User.query.filter_by(uid=uid).first()
+    uid = request.json["uid"]
+    user = UserController.load_by_uid(uid)
     if not user:
         return {"message": "No user found"}, 400
-    return {"message": "User logged in"}, 202
+    return {"message": "User logged in"}, 200
