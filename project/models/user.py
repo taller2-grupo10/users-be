@@ -13,7 +13,7 @@ class User(BaseModel):
 
     @property
     def roles(self):
-        return [ur.role.id for ur in self.users_roles if not ur.is_deleted]
+        return [ur.role for ur in self.users_roles if not ur.is_deleted]
 
     @property
     def permissions(self):

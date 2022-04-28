@@ -1,7 +1,6 @@
 from project.controllers.base_controller import BaseController
 from project.models.user import User
-from project.models.user_role import UserRole
-from project import db
+from project.controllers.user_role_controller import UserRoleController
 
 
 class UserAlreadyExists(Exception):
@@ -18,15 +17,6 @@ class UserController(BaseController):
         No verifications needed.
         """
         pass
-
-    @classmethod
-    def _update(cls, user: User, roles: None, **kwargs) -> None:
-        """
-        Receives a user, a role id and additional arguments.
-        Updates the user with new data.
-        """
-        updated_user = user.update(roles=roles, **kwargs)
-        cls.save(updated_user)
 
     @classmethod
     def load_by_uid(cls, uid: str) -> User:
@@ -53,7 +43,5 @@ class UserController(BaseController):
         new_user = User(uid=uid)
         cls.save(new_user)
         for role_id in roles:
-            ur = UserRole(role_id=role_id, user=new_user)
-            db.session.add(ur)
-        db.session.commit()
+            UserRoleController.create(user_id=new_user.id, role_id=role_id)
         return new_user
