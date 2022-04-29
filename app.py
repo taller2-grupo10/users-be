@@ -11,7 +11,6 @@ from project.config import Config
 # instance using the development configuration
 app = create_app("project.config.Config")
 
-
 cred = credentials.Certificate(
     {
         "type": Config.FIREBASE_TYPE,
@@ -28,30 +27,6 @@ cred = credentials.Certificate(
 )
 firebase_admin.initialize_app(cred)
 
-
-@app.route("/")
-def hello_world():
-    return jsonify(hello="staging")
-
-
-@app.route("/login", methods=["POST", "GET"])
-def handle_login():
-    print(request)
-    if request.method == "POST":
-        new_user = auth.create_user(
-            email=request.json["email"], password=request.json["password"]
-        )
-        print(f"User created: {new_user.uid}")
-        return jsonify(user_id=new_user.uid, email=new_user.email)
-    elif request.method == "GET":
-        user = auth.get_user_by_email(email=request.json["email"])
-        return jsonify(
-            user_id=user.uid,
-            email=user.email,
-            display_name=user.display_name,
-        )
-
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
