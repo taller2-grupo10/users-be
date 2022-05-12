@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from project.blueprints.token_check import check_token
+from project.blueprints.auth_helper import check_token
 from project.controllers.user_controller import UserController, UserAlreadyExists
 
 

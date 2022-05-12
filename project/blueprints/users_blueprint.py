@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from project.blueprints.token_check import check_token
+from project.blueprints.auth_helper import check_token
 from project.controllers.user_controller import UserController
 from firebase_admin import auth
 
