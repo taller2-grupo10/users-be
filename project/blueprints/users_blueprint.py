@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request
-from project.blueprints.auth_helper import check_token
-from project.controllers.user_controller import UserController
 from firebase_admin import auth
+from flask import Blueprint, jsonify
+from project.controllers.user_controller import UserController
+from project.helpers.helper_auth import check_token
+from project.helpers.helper_media import MediaRequester
 
 users_blueprint = Blueprint("users_blueprint", __name__)
 USERS_ENDPOINTS = "/users"

@@ -1,0 +1,28 @@
+import os
+import requests
+from flask import jsonify
+
+
+MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
+
+
+class MediaRequester:
+    @staticmethod
+    def get(endpoint):
+        response = requests.get(f"{MEDIA_URL}/{endpoint}")
+        return response.json(), response.status_code
+
+    @staticmethod
+    def post(endpoint, data):
+        response = requests.post(f"{MEDIA_URL}/{endpoint}", data=data)
+        return response.json(), response.status_code
+
+    @staticmethod
+    def put(endpoint, data):
+        response = requests.put(f"{MEDIA_URL}/{endpoint}", data=data)
+        return response.json(), response.status_code
+
+    @staticmethod
+    def delete(endpoint):
+        response = requests.delete(f"{MEDIA_URL}/{endpoint}")
+        return response.json(), response.status_code

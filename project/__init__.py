@@ -32,6 +32,8 @@ def register_blueprints(app):
 
     from project.blueprints.authorization_blueprint import authorization_blueprint
     from project.blueprints.users_blueprint import users_blueprint
+    from project.blueprints.media_blueprint import media_blueprint
 
     app.register_blueprint(authorization_blueprint)
     app.register_blueprint(users_blueprint)
+    app.register_blueprint(media_blueprint)
