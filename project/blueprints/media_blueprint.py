@@ -47,7 +47,84 @@ def _delete_song(song_id):
     return MediaRequester.delete(f"songs/{song_id}")
 
 
+def _put_artist(artist_id, request):
+    return MediaRequester.put(f"artists/{artist_id}", data=request)
+
+
+def _put_album(album_id, request):
+    return MediaRequester.put(f"albums/{album_id}", data=request)
+
+
+def _put_song(song_id, request):
+    return MediaRequester.put(f"songs/{song_id}", data=request)
+
+
 # -----------------------------------------------------------------------------------
+# Updaters
+
+
+@media_blueprint.route(f"{MEDIA_ENDPOINT}/{ARTISTS_ENDPOINT}", methods=["PUT"])
+# @check_token
+def update_artist():
+    uid = request.json["uid"]
+    artist, rc = MediaRequester.get(f"artists/{uid}")
+    artist_id = artist[0]["_id"]
+
+    albums, rc = MediaRequester.get(f"albums/artistId/{artist_id}")
+
+    songs, rc = MediaRequester.get(f"songs/artistId/{artist_id}")
+
+    for album in albums:
+        album_id = album["_id"]
+        album_request = {"artist.name": request.json["name"]}
+        _put_album(album_id, album_request)
+
+    for song in songs:
+        song_id = song["_id"]
+        song_artist_names = song["artists"]["names"]
+        artist_name = artist[0]["name"]
+        song_artist_names = list(filter(lambda x: x != artist_name, song_artist_names))
+        song_artist_names.append(request.json["name"])
+
+        song_request = {"artists.names": song_artist_names}
+        _put_song(song_id, song_request)
+
+    _put_artist(artist_id, request.json)
+
+    return jsonify({"message": "Artist, albums and songs updated"}), 200
+
+
+@media_blueprint.route(f"{MEDIA_ENDPOINT}/{ALBUMS_ENDPOINT}", methods=["PUT"])
+# @check_token
+def update_album():
+    id = request.json["id"]
+
+    album, rc = MediaRequester.get(f"albums/{id}")
+    album_id = album["_id"]
+
+    songs, rc = MediaRequester.get(f"songs/albumId/{album_id}")
+
+    for song in songs:
+        song_id = song["_id"]
+        song_request = {"album.name": request.json["title"]}
+        _put_song(song_id, song_request)
+
+    _put_album(album_id, request.json)
+
+    return jsonify({"message": "Album and Songs updated"}), 200
+
+
+@media_blueprint.route(f"{MEDIA_ENDPOINT}/{SONGS_ENDPOINT}", methods=["PUT"])
+# @check_token
+def update_song():
+    id = request.json["id"]
+    print(f"request.json: {request.json}")
+    _put_song(id, request.json)
+    return jsonify({"message": "Song updated"}), 200
+
+
+# -----------------------------------------------------------------------------------
+# Deleters
 
 
 @media_blueprint.route(f"{MEDIA_ENDPOINT}/{ARTISTS_ENDPOINT}", methods=["DELETE"])

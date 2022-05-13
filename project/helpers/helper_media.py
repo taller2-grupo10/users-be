@@ -14,12 +14,20 @@ class MediaRequester:
 
     @staticmethod
     def post(endpoint, data):
-        response = requests.post(f"{MEDIA_URL}/{endpoint}", data=data)
+        response = requests.post(
+            f"{MEDIA_URL}/{endpoint}",
+            headers={"Content-Type": "application/json"},
+            json=data,
+        )
         return response.json(), response.status_code
 
     @staticmethod
     def put(endpoint, data):
-        response = requests.put(f"{MEDIA_URL}/{endpoint}", data=data)
+        response = requests.put(
+            f"{MEDIA_URL}/{endpoint}",
+            headers={"Content-Type": "application/json"},
+            json=data,
+        )
         return response.json(), response.status_code
 
     @staticmethod
