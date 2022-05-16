@@ -59,6 +59,56 @@ def _put_song(song_id, request):
     return MediaRequester.put(f"songs/{song_id}", data=request)
 
 
+def _post_artist(request):
+    return MediaRequester.post("artists", data=request)
+
+
+def _post_album(request):
+    return MediaRequester.post("albums", data=request)
+
+
+def _post_song(request):
+    return MediaRequester.post_file("songs", files=request)
+
+
+# -----------------------------------------------------------------------------------
+# Creators
+
+
+@media_blueprint.route(f"{MEDIA_ENDPOINT}/{ARTISTS_ENDPOINT}", methods=["POST"])
+# @check_token
+def create_artist():
+    response, status_code = _post_artist(request.json)
+    return jsonify(response), status_code
+
+
+@media_blueprint.route(f"{MEDIA_ENDPOINT}/{ALBUMS_ENDPOINT}", methods=["POST"])
+# @check_token
+def create_album():
+    response, status_code = _post_album(request.json)
+    return jsonify(response), status_code
+
+
+@media_blueprint.route(f"{MEDIA_ENDPOINT}/{SONGS_ENDPOINT}", methods=["POST"])
+# @check_token
+def create_song():
+    if "files" not in request.files:
+        return (
+            jsonify({"message": "Error while creating Song. Missing file."}),
+            422,
+        )
+    if "data" not in request.files:
+        return jsonify({"message": "Error while creating Song. Missing data."}), 422
+    file = request.files["files"]
+    if file.filename == "":
+        return (
+            jsonify({"message": "Error while creating Song. File without name."}),
+            422,
+        )
+    response, status_code = _post_song(request.files)
+    return jsonify(response), status_code
+
+
 # -----------------------------------------------------------------------------------
 # Updaters
 
