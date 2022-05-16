@@ -3,14 +3,15 @@ from flask import Blueprint, jsonify
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
 from project.helpers.helper_media import MediaRequester
+from flask_restx import Namespace, Resource, fields
 
-users_blueprint = Blueprint("users_blueprint", __name__)
-USERS_ENDPOINTS = "/users"
-
+namespace = Namespace(
+    name="Users", path="admin/users", description="Users related endpoints"
+)
 
 def user_schema(user):
     try:
-        email = (auth.get_user(user.uid).email,)
+        email = auth.get_user(user.uid).email
     except:
         email = None
     return {
@@ -24,7 +25,8 @@ def user_schema(user):
     }
 
 
-@users_blueprint.route(f"{USERS_ENDPOINTS}", methods=["GET"])
-@check_token
-def get_all_users():
-    return jsonify([user_schema(user) for user in UserController.load_all()]), 200
+@namespace.route("")
+class Users(Resource):
+    # @check_token
+    def get(self):
+        return jsonify([user_schema(user) for user in UserController.load_all()]), 200
