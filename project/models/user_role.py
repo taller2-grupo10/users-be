@@ -13,3 +13,8 @@ class UserRole(BaseModel):
 
     def __repr__(self):
         return f"<UserRole {self.user_id} {self.role_id}>"
+
+
+ID_SUPERADMIN = 1
+ID_ADMIN = 2
+ID_USER = 3

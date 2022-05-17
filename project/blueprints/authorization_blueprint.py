@@ -1,7 +1,8 @@
 from flask import Blueprint, request
-from project.controllers.user_controller import UserAlreadyExists, UserController
-from project.helpers.helper_auth import check_token
+from project.controllers.user_controller import UserController
+from project.helpers.helper_auth import check_token, is_valid_token
 from project.helpers.helper_media import MediaRequester
+from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
 from flask_restx import Namespace, Resource, fields
 
 namespace = Namespace(
@@ -22,17 +23,24 @@ class Login(Resource):
 
 @namespace.route("/signup")
 class Signup(Resource):
-    @check_token
+    @is_valid_token
     def post(self):
         uid = request.json["uid"]
-        roles = request.json["roles"]
         name = request.json["name"]
-        if not uid or not roles:
-            return {"message": "No uid/roles provided"}, 400
+        if not uid or not name:
+            return {"message": "No uid/name provided"}, 400
         try:
-            UserController.create(uid, roles)
-            data = {"userId": uid, "name": name}
-            MediaRequester.post("artists", data)
-        except (UserAlreadyExists, ValueError) as e:
+            user = UserController.load_by_uid(uid)
+            if user:
+                return {"message": "User already exists"}, 400
+
+            data = {"uid": uid, "name": name}
+            response, status_code = MediaRequester.post("artists", data)
+            new_user = UserController.create(
+                uid=uid, role_id=ID_USER, artist_id=response["_id"]
+            )
+        except ValueError as e:
             return {"message": "Error while creating User"}, 400
-        return {"message": "User created"}, 201
+        return response, status_code
+
+

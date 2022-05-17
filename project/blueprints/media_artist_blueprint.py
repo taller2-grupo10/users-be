@@ -32,14 +32,12 @@ class ArtistById(Resource):
         return response, status_code
 
     # @check_token
-    def put(self):
-        uid = request.json["uid"]  # TODO: front knows mongo id, no need to use uid
-        artist, status_code = MediaRequester.get(f"artists/{uid}")
-        artist_id = artist[0]["_id"]
+    def put(self, id):
+        artist, status_code = MediaRequester.get(f"artists/{id}")
 
-        albums, status_code = MediaRequester.get(f"albums/artistId/{artist_id}")
+        albums, status_code = MediaRequester.get(f"albums/artistId/{id}")
 
-        songs, status_code = MediaRequester.get(f"songs/artistId/{artist_id}")
+        songs, status_code = MediaRequester.get(f"songs/artistId/{id}")
 
         for album in albums:
             album_id = album["_id"]
@@ -58,7 +56,7 @@ class ArtistById(Resource):
             song_request = {"artists.names": song_artist_names}
             _put_song(song_id, song_request)
 
-        MediaRequester.put(f"artists/{artist_id}", data=request.json)
+        MediaRequester.put(f"artists/{id}", data=request.json)
 
         return jsonify({"message": "Artist, albums and songs updated"}), 200
 
