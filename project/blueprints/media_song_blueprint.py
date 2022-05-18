@@ -55,7 +55,6 @@ song_model = api.model(
                 },
             )
         ),
-        "plays": fields.Integer(required=False, description="Song plays"),
         "genres": fields.List(
             fields.String(
                 required=False,
@@ -63,7 +62,6 @@ song_model = api.model(
                 enum=["Rock", "Trap"],
             )
         ),
-        "isDeleted": fields.Boolean(required=False, description="Song is deleted"),
     },
 )
 
@@ -71,6 +69,8 @@ song_response_model = api.inherit(
     "Song Response",
     song_model,
     {
+        "plays": fields.Integer(required=False, description="Song plays"),
+        "isDeleted": fields.Boolean(required=False, description="Song is deleted"),
         "url": fields.String(required=True, description="Song url"),
     },
 )
