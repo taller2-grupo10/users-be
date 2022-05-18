@@ -33,19 +33,19 @@ def register_blueprints(app):
     from project.models.user_role import UserRole
 
     from project.blueprints.media_artist_blueprint import (
-        namespace as media_artist_namespace,
+        api as media_artist_namespace,
     )
     from project.blueprints.media_album_blueprint import (
-        namespace as media_album_namespace,
+        api as media_album_namespace,
     )
     from project.blueprints.media_song_blueprint import (
-        namespace as media_song_namespace,
+        api as media_song_namespace,
     )
     from project.blueprints.users_blueprint import (
-        namespace as users_namespace,
+        api as users_namespace,
     )
     from project.blueprints.authorization_blueprint import (
-        namespace as auth_namespace,
+        api as auth_namespace,
     )
 
     blueprint = Blueprint("api", __name__, url_prefix="/")

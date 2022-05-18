@@ -1,3 +1,4 @@
+from pydoc import doc
 from urllib import response
 from flask import Blueprint, request
 from project.helpers.helper_auth import check_token
@@ -6,32 +7,63 @@ from flask import jsonify
 from flask_restx import Namespace, Resource, fields
 
 
-namespace = Namespace(
+api = Namespace(
     name="Artists", path="media/artists", description="Artists related endpoints"
 )
 
+artist_post_model = api.model(
+    "Artist Post",
+    {
+        "name": fields.String(required=True, description="Artist name"),
+        "uid": fields.String(
+            required=True, description="Artist identifier provided by Firebase"
+        ),
+        "isDeleted": fields.Boolean(required=False, description="Artist is deleted"),
+        "plays": fields.Integer(required=False, description="Artist plays"),
+    },
+)
 
-@namespace.route("")
+artist_response_model = api.inherit(
+    "Artist Response",
+    artist_post_model,
+    {
+        "_id": fields.String(required=False, description="Artist id"),
+        "createdAt": fields.DateTime(required=False, description="Artist created at"),
+        "updatedAt": fields.DateTime(required=False, description="Artist updated at"),
+    },
+)
+
+# ----------------------------------------------------------------------
+# Routes
+
+
+@api.route("")
 class Artists(Resource):
     # @check_token
+    @api.response(200, "Success", artist_response_model)
     def get(self):
         response, status_code = MediaRequester.get(f"artists")
         return response, status_code
 
     # @check_token
+    @api.expect(artist_post_model)
+    @api.response(200, "Success", artist_response_model)
     def post(self):
         response, status_code = MediaRequester.post("artists", data=request.json)
         return response, status_code
 
 
-@namespace.route("/id/<id>")
+@api.route("/id/<id>", doc={"params": {"id": "Artist id"}})
 class ArtistById(Resource):
     # @check_token
+    @api.response(200, "Success", artist_response_model)
     def get(self, id):
         response, status_code = MediaRequester.get(f"artists/{id}")
         return response, status_code
 
     # @check_token
+    # @api.expect(artist_post_model)
+    @api.response(200, "Success", artist_response_model)
     def put(self, id):
         artist, status_code = MediaRequester.get(f"artists/{id}")
 
@@ -83,9 +115,10 @@ class ArtistById(Resource):
         return jsonify({"message": "Artist, albums and songs deleted"}), 200
 
 
-@namespace.route("/name/<name>")
+@api.route("/name/<name>", doc={"params": {"name": "Artist name"}})
 class ArtistByName(Resource):
     # @check_token
+    @api.response(200, "Success", artist_response_model)
     def get(self, name):
         response, status_code = MediaRequester.get(f"artists/name/{name}")
         return response, status_code

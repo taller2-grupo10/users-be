@@ -5,14 +5,82 @@ from project.helpers.helper_media import MediaRequester
 from flask import jsonify
 from flask_restx import Namespace, Resource, fields
 
-namespace = Namespace(
-    name="Songs", path="media/songs", description="Songs related endpoints"
+api = Namespace(name="Songs", path="media/songs", description="Songs related endpoints")
+
+song_model_upload = api.parser()
+song_model_upload.add_argument(
+    "files", type="FileStorage", help="Song file", location="files"
+)
+song_model_upload.add_argument(
+    "'data' json containing payload specified below", type="json", location="form"
+)
+
+song_model = api.model(
+    "Song",
+    {
+        "title": fields.String(required=True, description="Song title"),
+        "artists": fields.Nested(
+            api.model(
+                "Song.artists",
+                {
+                    "artist": fields.String(
+                        required=True,
+                        description="Artist identifier",
+                    ),
+                    "name": fields.String(required=True, description="Artist name"),
+                    "collaborators": fields.List(
+                        fields.String(
+                            required=False,
+                            description="Collaborator artist identifier",
+                        )
+                    ),
+                    "collaboratorsNames": fields.List(
+                        fields.String(
+                            required=False,
+                            description="Collaborator artist name",
+                        )
+                    ),
+                },
+            )
+        ),
+        "album": fields.Nested(
+            api.model(
+                "Song.album",
+                {
+                    "album": fields.String(
+                        required=True,
+                        description="Album identifier",
+                    ),
+                    "name": fields.String(required=True, description="Album name"),
+                },
+            )
+        ),
+        "plays": fields.Integer(required=False, description="Song plays"),
+        "genres": fields.List(
+            fields.String(
+                required=False,
+                description="Song genres",
+                enum=["Rock", "Trap"],
+            )
+        ),
+        "isDeleted": fields.Boolean(required=False, description="Song is deleted"),
+    },
+)
+
+song_response_model = api.inherit(
+    "Song Response",
+    song_model,
+    {
+        "url": fields.String(required=True, description="Song url"),
+    },
 )
 
 
-@namespace.route("")
+@api.route("")
 class Songs(Resource):
     # @check_token
+    @api.expect(song_model_upload, song_model)
+    @api.response(200, "Success", song_response_model)
     def post(self):
         if "files" not in request.files:
             return (
@@ -31,9 +99,10 @@ class Songs(Resource):
         return response, status_code
 
 
-@namespace.route("/id/<id>")
+@api.route("/id/<id>", doc={"params": {"id": "Song id"}})
 class SongsById(Resource):
     # @check_token
+    @api.response(200, "Success", song_response_model)
     def get(self, id):
         response, status_code = MediaRequester.get(f"songs/{id}")
         return response, status_code
@@ -49,25 +118,28 @@ class SongsById(Resource):
         return response, status_code
 
 
-@namespace.route("/name/<name>")
+@api.route("/name/<name>", doc={"params": {"name": "Song name"}})
 class SongsByName(Resource):
     # @check_token
+    @api.response(200, "Success", song_response_model)
     def get(self, name):
         response, status_code = MediaRequester.get(f"songs/name/{name}")
         return response, status_code
 
 
-@namespace.route("/album/<albumId>")
+@api.route("/album/<albumId>", doc={"params": {"albumId": "Album id"}})
 class SongsByAlbumId(Resource):
     # @check_token
+    @api.response(200, "Success", song_response_model)
     def get(self, albumId):
         response, status_code = MediaRequester.get(f"songs/albumId/{albumId}")
         return response, status_code
 
 
-@namespace.route("/artist/<artistId>")
+@api.route("/artist/<artistId>", doc={"params": {"artistId": "Artist id"}})
 class SongsByArtistId(Resource):
     # @check_token
+    @api.response(200, "Success", song_response_model)
     def get(self, artistId):
         response, status_code = MediaRequester.get(f"songs/artistId/{artistId}")
         return response, status_code

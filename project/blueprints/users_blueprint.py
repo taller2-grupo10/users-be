@@ -5,9 +5,8 @@ from project.helpers.helper_auth import check_token
 from project.helpers.helper_media import MediaRequester
 from flask_restx import Namespace, Resource, fields
 
-namespace = Namespace(
-    name="Users", path="admin/users", description="Users related endpoints"
-)
+api = Namespace(name="Users", path="admin/users", description="Users related endpoints")
+
 
 def user_schema(user):
     try:
@@ -25,7 +24,7 @@ def user_schema(user):
     }
 
 
-@namespace.route("")
+@api.route("")
 class Users(Resource):
     # @check_token
     def get(self):

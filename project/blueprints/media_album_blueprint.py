@@ -5,22 +5,48 @@ from project.helpers.helper_media import MediaRequester
 from flask import jsonify
 from flask_restx import Namespace, Resource, fields
 
-namespace = Namespace(
+api = Namespace(
     name="Albums", path="media/albums", description="Albums related endpoints"
 )
 
+album_model = api.model(
+    "Album",
+    {
+        "title": fields.String(required=True, description="Album title"),
+        "artist": fields.Nested(
+            api.model(
+                "Album.artist",
+                {
+                    "artist": fields.String(
+                        required=True,
+                        description="Artist identifier provided by Firebase",
+                    ),
+                    "name": fields.String(required=True, description="Artist name"),
+                },
+            )
+        ),
+        "plays": fields.Integer(required=False, description="Album plays"),
+        "likes": fields.Integer(required=False, description="Album likes"),
+        "photoURL": fields.String(required=True, description="Album photo URL"),
+        "isDeleted": fields.Boolean(required=False, description="Album is deleted"),
+    },
+)
 
-@namespace.route("")
+
+@api.route("")
 class Albums(Resource):
     # @check_token
+    @api.expect(album_model)
+    @api.response(200, "Success", album_model)
     def post(self):
         response, status_code = MediaRequester.post("albums", data=request.json)
         return response, status_code
 
 
-@namespace.route("/id/<id>")
+@api.route("/id/<id>", doc={"params": {"id": "Album id"}})
 class AlbumsById(Resource):
     # @check_token
+    @api.response(200, "Success", album_model)
     def get(self, id):
         response, status_code = MediaRequester.get(f"albums/{id}")
         return response, status_code
@@ -61,9 +87,10 @@ class AlbumsById(Resource):
         return jsonify({"message": "Album and Songs deleted"}), 200
 
 
-@namespace.route("/artist/<artist_id>")
+@api.route("/artist/<artist_id>", doc={"params": {"artist_id": "Artist id"}})
 class AlbumsByArtist(Resource):
     # @check_token
+    @api.response(200, "Success", album_model)
     def get(self, artist_id):
         response, status_code = MediaRequester.get(f"albums/artistId/{artist_id}")
         return response, status_code
