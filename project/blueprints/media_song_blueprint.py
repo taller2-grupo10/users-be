@@ -82,20 +82,17 @@ class Songs(Resource):
     @api.expect(song_model_upload, song_model)
     @api.response(200, "Success", song_response_model)
     def post(self):
-        if "files" not in request.files:
+        if "files" not in request.form:
+            print("a")
             return (
-                jsonify({"message": "Error while creating Song. Missing file."}),
+                {"message": "Error while creating Song. Missing file."},
                 422,
             )
-        if "data" not in request.files:
-            return jsonify({"message": "Error while creating Song. Missing data."}), 422
-        file = request.files["files"]
-        if file.filename == "":
-            return (
-                jsonify({"message": "Error while creating Song. File without name."}),
-                422,
-            )
-        response, status_code = MediaRequester.post_file("songs", files=request.files)
+        if "data" not in request.form:
+            return {"message": "Error while creating Song. Missing data."}, 422
+        file = request.form["files"]
+        
+        response, status_code = MediaRequester.post_file("songs", files=request.form)
         return response, status_code
 
 

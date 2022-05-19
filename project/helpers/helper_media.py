@@ -23,13 +23,15 @@ class MediaRequester:
 
     @staticmethod
     def post_file(endpoint, files):
+        print("a")
         response = requests.post(
             f"{MEDIA_URL}/{endpoint}",
             files={
-                "files": (files["files"].filename, files["files"]),
+                "files": ("pepe", bytes(files["files"],"utf-8")),
                 "data": files["data"],
             },
         )
+        print("b")
         return response.json(), response.status_code
 
     @staticmethod
