@@ -1,7 +1,9 @@
+import base64
+import json
 import os
+
 import requests
 from flask import jsonify
-
 
 MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
 
@@ -23,15 +25,19 @@ class MediaRequester:
 
     @staticmethod
     def post_file(endpoint, files):
-        print("a")
+        name = json.loads(files["data"])["title"]
+        base64_bytes = files["files"].encode("ascii")
+        message_bytes = base64.b64decode(base64_bytes)
         response = requests.post(
             f"{MEDIA_URL}/{endpoint}",
             files={
-                "files": ("pepe", bytes(files["files"],"utf-8")),
+                "files": (
+                    f"{name}.mp3",
+                    message_bytes,
+                ),
                 "data": files["data"],
             },
         )
-        print("b")
         return response.json(), response.status_code
 
     @staticmethod

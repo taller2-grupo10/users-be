@@ -60,13 +60,13 @@ class Login(Resource):
         return {
             "id": user.id,
             "uid": user.uid,
-            "active": user.active,
+            # "active": user.active,
             "artist_id": user.artist_id,
-            "roles": [role.id for role in user.roles],
-            "permissions": user.permissions,
-            "is_deleted": user.is_deleted,
-            "created_at": user.created_at,
-            "updated_at": user.updated_at,
+            # "roles": [role.id for role in user.roles],
+            # "permissions": user.permissions,
+            # "is_deleted": user.is_deleted,
+            # "created_at": user.created_at,
+            # "updated_at": user.updated_at,
         }, 200
 
 
