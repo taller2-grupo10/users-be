@@ -47,6 +47,9 @@ def register_blueprints(app):
     from project.blueprints.authorization_blueprint import (
         api as auth_namespace,
     )
+    from project.blueprints.media_genres_blueprint import (
+        api as media_genres_namespace,
+    )
 
     blueprint = Blueprint("api", __name__, url_prefix="/")
 
@@ -63,5 +66,6 @@ def register_blueprints(app):
     api_extension.add_namespace(media_song_namespace)
     api_extension.add_namespace(users_namespace)
     api_extension.add_namespace(auth_namespace)
+    api_extension.add_namespace(media_genres_namespace)
 
     app.register_blueprint(blueprint)

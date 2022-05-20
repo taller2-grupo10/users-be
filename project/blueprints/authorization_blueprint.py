@@ -6,7 +6,7 @@ from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
 from flask_restx import Namespace, Resource, fields
 
 api = Namespace(
-    name="Authorization", path="auth", description="Authorization related endpoints"
+    name="Authorization", path="/auth", description="Authorization related endpoints"
 )
 
 login_model = api.model(

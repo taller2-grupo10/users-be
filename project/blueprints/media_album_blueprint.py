@@ -6,7 +6,7 @@ from flask import jsonify
 from flask_restx import Namespace, Resource, fields
 
 api = Namespace(
-    name="Albums", path="media/albums", description="Albums related endpoints"
+    name="Albums", path="/media/albums", description="Albums related endpoints"
 )
 
 album_model = api.model(

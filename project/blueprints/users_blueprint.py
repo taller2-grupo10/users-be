@@ -5,7 +5,9 @@ from project.helpers.helper_auth import check_token
 from project.helpers.helper_media import MediaRequester
 from flask_restx import Namespace, Resource, fields
 
-api = Namespace(name="Users", path="admin/users", description="Users related endpoints")
+api = Namespace(
+    name="Users", path="/admin/users", description="Users related endpoints"
+)
 
 
 def user_schema(user):

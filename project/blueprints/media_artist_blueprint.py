@@ -8,7 +8,7 @@ from flask_restx import Namespace, Resource, fields
 
 
 api = Namespace(
-    name="Artists", path="media/artists", description="Artists related endpoints"
+    name="Artists", path="/media/artists", description="Artists related endpoints"
 )
 
 artist_post_model = api.model(
