@@ -90,9 +90,14 @@ class Songs(Resource):
             )
         if "data" not in request.form:
             return {"message": "Error while creating Song. Missing data."}, 422
-        file = request.form["files"]
-        
+
         response, status_code = MediaRequester.post_file("songs", files=request.form)
+        return response, status_code
+
+    # @check_token
+    @api.response(200, "Success", song_response_model)
+    def get(self):
+        response, status_code = MediaRequester.get("songs")
         return response, status_code
 
 

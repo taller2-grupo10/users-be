@@ -42,6 +42,12 @@ class Albums(Resource):
         response, status_code = MediaRequester.post("albums", data=request.json)
         return response, status_code
 
+    # @check_token
+    @api.response(200, "Success", album_model)
+    def get(self):
+        response, status_code = MediaRequester.get("albums")
+        return response, status_code
+
 
 @api.route("/id/<id>", doc={"params": {"id": "Album id"}})
 class AlbumsById(Resource):
