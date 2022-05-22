@@ -23,6 +23,13 @@ artist_post_model = api.model(
     },
 )
 
+artist_put_model = api.model(
+    "Artist Put",
+    {
+        "name": fields.String(required=True, description="Artist name"),
+    },
+)
+
 artist_response_model = api.inherit(
     "Artist Response",
     artist_post_model,
@@ -33,6 +40,29 @@ artist_response_model = api.inherit(
     },
 )
 
+artist_put_response_model = api.model(
+    "Artist Put Response",
+    {
+        "message": fields.String(
+            required=True,
+            description="Artist updated",
+            example="Artist, albums and songs updated",
+        ),
+        "data": fields.Nested(artist_response_model),
+    },
+)
+
+artist_delete_response_model = api.model(
+    "Artist Delete Response",
+    {
+        "message": fields.String(
+            required=True,
+            description="Artist updated",
+            example="Artist, albums and songs deleted",
+        ),
+        "data": fields.Nested(artist_response_model),
+    },
+)
 # ----------------------------------------------------------------------
 # Routes
 
@@ -62,13 +92,11 @@ class ArtistById(Resource):
         return response, status_code
 
     # @check_token
-    # @api.expect(artist_post_model)
-    @api.response(200, "Success", artist_response_model)
+    @api.expect(artist_put_model)
+    @api.response(200, "Success", artist_put_response_model)
     def put(self, id):
         artist, status_code = MediaRequester.get(f"artists/{id}")
-
         albums, status_code = MediaRequester.get(f"albums/artistId/{id}")
-
         songs, status_code = MediaRequester.get(f"songs/artistId/{id}")
 
         for album in albums:
@@ -78,29 +106,40 @@ class ArtistById(Resource):
 
         for song in songs:
             song_id = song["_id"]
-            song_artist_names = song["artists"]["names"]
             artist_name = artist[0]["name"]
-            song_artist_names = list(
-                filter(lambda x: x != artist_name, song_artist_names)
-            )
-            song_artist_names.append(request.json["name"])
+            # Modify song artist name if it's the main artist
+            if artist_name == song["artist"]["name"]:
+                song_request = {"artist.name": request.json["name"]}
+                _put_song(song_id, song_request)
+            # Modify song collaborator name if it's a featured artist
+            elif artist_name in song["artist"]["collaboratorsNames"]:
+                song_collaborators_names = song["artist"]["collaboratorsNames"]
+                song_collaborators_names = list(
+                    filter(lambda x: x != artist_name, song_collaborators_names)
+                )
+                song_collaborators_names.append(request.json["name"])
+                song_request = {"artist.collaboratorsNames": song_collaborators_names}
+                _put_song(song_id, song_request)
 
-            song_request = {"artists.names": song_artist_names}
-            _put_song(song_id, song_request)
+        artist_modification_response, status_code = MediaRequester.put(
+            f"artists/{id}", data=request.json
+        )
 
-        MediaRequester.put(f"artists/{id}", data=request.json)
-
-        return jsonify({"message": "Artist, albums and songs updated"}), 200
+        return (
+            jsonify(
+                {
+                    "message": "Artist, albums and songs updated",
+                    "data": artist_modification_response,
+                }
+            ),
+            200,
+        )
 
     # @check_token
-    def delete(self):
-        uid = request.json["uid"]
-        artist, status_code = MediaRequester.get(f"artists/{uid}")
-        artist_id = artist[0]["_id"]
-
-        albums, status_code = MediaRequester.get(f"albums/artistId/{artist_id}")
-
-        songs, status_code = MediaRequester.get(f"songs/artistId/{artist_id}")
+    @api.response(200, "Success", artist_delete_response_model)
+    def delete(self, id):
+        albums, status_code = MediaRequester.get(f"albums/artistId/{id}")
+        songs, status_code = MediaRequester.get(f"songs/artistId/{id}")
 
         for album in albums:
             album_id = album["_id"]
@@ -110,9 +149,17 @@ class ArtistById(Resource):
             song_id = song["_id"]
             _delete_song(song_id)
 
-        MediaRequester.delete(f"artists/{artist_id}")
+        artist_delete_response, status_code = MediaRequester.delete(f"artists/{id}")
 
-        return jsonify({"message": "Artist, albums and songs deleted"}), 200
+        return (
+            jsonify(
+                {
+                    "message": "Artist, albums and songs deleted",
+                    "data": artist_delete_response,
+                }
+            ),
+            200,
+        )
 
 
 @api.route("/name/<name>", doc={"params": {"name": "Artist name"}})
