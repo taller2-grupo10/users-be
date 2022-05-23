@@ -148,3 +148,12 @@ class SongsByArtistId(Resource):
     def get(self, artistId):
         response, status_code = MediaRequester.get(f"songs/artistId/{artistId}")
         return response, status_code
+
+
+@api.route("/genre/<genreName>", doc={"params": {"genreName": "Genre name"}})
+class SongsByGenreName(Resource):
+    # @check_token
+    @api.response(200, "Success", song_response_model)
+    def get(self, genreName):
+        response, status_code = MediaRequester.get(f"songs/genre/{genreName}")
+        return response, status_code

@@ -170,6 +170,16 @@ class AlbumsByArtist(Resource):
         return response, status_code
 
 
+# Albums by genre name
+@api.route("/genre/<genre_name>", doc={"params": {"genre_name": "Genre name"}})
+class AlbumsByGenre(Resource):
+    # @check_token
+    @api.response(200, "Success", album_response_model)
+    def get(self, genre_name):
+        response, status_code = MediaRequester.get(f"albums/genre/{genre_name}")
+        return response, status_code
+
+
 def _delete_song(song_id):
     return MediaRequester.delete(f"songs/{song_id}")
 
