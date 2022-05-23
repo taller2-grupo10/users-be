@@ -8,10 +8,6 @@ on:
       DOCKER_HUB_ACCESS_TOKEN:
         required: true
 
-  push:
-    branches-ignore:
-      - 'main'
-      - 'staging'
   pull_request:
     branches-ignore:
       - 'main'
