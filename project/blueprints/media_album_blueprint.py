@@ -10,6 +10,15 @@ api = Namespace(
     name="Albums", path="/media/albums", description="Albums related endpoints"
 )
 
+album_model_upload = api.parser()
+album_model_upload.add_argument(
+    "files", type="FileStorage", help="Album photo file", location="files"
+)
+album_model_upload.add_argument(
+    "'data' json containing payload specified below", type="json", location="form"
+)
+
+
 album_model = api.model(
     "Album",
     {
@@ -27,7 +36,7 @@ album_model = api.model(
                 },
             )
         ),
-        "photoURL": fields.String(required=True, description="Album photo URL"),
+        "filename": fields.String(required=True, description="Album photo filename"),
         "genres": music_genres_response_model,
     },
 )
@@ -36,6 +45,7 @@ album_response_model = api.inherit(
     "Album Response",
     album_model,
     {
+        "photoURL": fields.String(required=True, description="Album photo URL"),
         "plays": fields.Integer(required=False, description="Album plays"),
         "isDeleted": fields.Boolean(required=False, description="Album is deleted"),
         "likes": fields.Integer(required=False, description="Album likes"),
@@ -79,10 +89,22 @@ album_delete_response = api.model(
 @api.route("")
 class Albums(Resource):
     # @check_token
-    @api.expect(album_model)
+    @api.expect(album_model_upload, album_model)
     @api.response(200, "Success", album_response_model)
+    @api.doc(
+        responses={
+            400: "{message: Error while creating Album. Missing file. || Error while creating Album. Missing data.}",
+        }
+    )
     def post(self):
-        response, status_code = MediaRequester.post("albums", data=request.json)
+        if "files" not in request.form:
+            return (
+                {"message": "Error while creating Album. Missing file."},
+                422,
+            )
+        if "data" not in request.form:
+            return {"message": "Error while creating Album. Missing data."}, 422
+        response, status_code = MediaRequester.post_file("albums", files=request.form)
         return response, status_code
 
     # @check_token

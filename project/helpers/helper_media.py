@@ -25,14 +25,14 @@ class MediaRequester:
 
     @staticmethod
     def post_file(endpoint, files):
-        name = json.loads(files["data"])["title"]
+        filename = json.loads(files["data"])["filename"]
         base64_bytes = files["files"].encode("ascii")
         message_bytes = base64.b64decode(base64_bytes)
         response = requests.post(
             f"{MEDIA_URL}/{endpoint}",
             files={
                 "files": (
-                    f"{name}.mp3",
+                    filename,
                     message_bytes,
                 ),
                 "data": files["data"],
