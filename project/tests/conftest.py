@@ -2,6 +2,7 @@ import pytest
 from flask import testing
 from project import create_app, db
 from werkzeug.datastructures import Headers
+from project.models.user import User
 
 """
 How to use pytest.fixture defined here:
@@ -59,5 +60,11 @@ def init_database(test_client):
 def _db():
     return db
 
+
+@pytest.fixture(scope="function")
+def user(_db):
+    user = User(uid="test_user", artist_id="1")
+    _db.session.add(user)
+    _db.session.commit()
 
 ### Fixture defines ###
