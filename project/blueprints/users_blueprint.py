@@ -20,6 +20,7 @@ def user_schema(user):
     return {
         "id": user.id,
         "uid": user.uid,
+        "artist_id": user.artist_id,
         "roles": [role.id for role in user.roles],
         "is_deleted": user.is_deleted,
         "created_at": date_to_str(user.created_at) if user.created_at else None,

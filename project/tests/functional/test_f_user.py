@@ -8,6 +8,7 @@ def test_get_all_users(test_client, init_database, _db, user):
         {
             "id": 1,
             "uid": "test_user",
+            "artist_id": "1",
             "roles": [],
             "is_deleted": False,
             "created_at": date_to_str(today()),
