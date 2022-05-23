@@ -20,7 +20,11 @@ class User(BaseModel):
     def permissions(self):
         aux = set()
         for role in self.roles:
-            aux = aux.union(set(role.permissions))
+            aux = (
+                aux.union(set(role.permissions))
+                if role.permissions
+                else aux.union(set())
+            )
         return list(aux)
 
     def __repr__(self):

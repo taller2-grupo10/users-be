@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token, is_valid_token
 from project.helpers.helper_media import MediaRequester
@@ -33,12 +34,14 @@ login_response_model = api.inherit(
     login_model,
     {
         "id": fields.Integer(required=False, description="User id"),
+        "uid": fields.String(required=False, description="User identifier"),
         "active": fields.Boolean(required=False, description="User active"),
         "artist_id": fields.String(required=False, description="Artist id"),
         "roles": fields.List(fields.Integer, required=False, description="User roles"),
         "permissions": fields.List(
             fields.String, required=False, description="User permissions"
         ),
+        "email": fields.String(required=False, description="User email"),
         "is_deleted": fields.Boolean(required=False, description="User is deleted"),
         "created_at": fields.DateTime(required=False, description="User created at"),
         "updated_at": fields.DateTime(required=False, description="User updated at"),
@@ -57,17 +60,7 @@ class Login(Resource):
         user = UserController.load_by_uid(uid)
         if not user:
             return {"message": "No user found"}, 400
-        return {
-            "id": user.id,
-            "uid": user.uid,
-            # "active": user.active,
-            "artist_id": user.artist_id,
-            # "roles": [role.id for role in user.roles],
-            # "permissions": user.permissions,
-            # "is_deleted": user.is_deleted,
-            # "created_at": user.created_at,
-            # "updated_at": user.updated_at,
-        }, 200
+        return user_schema(user=user), 200
 
 
 @api.route("/signup")

@@ -22,6 +22,8 @@ def user_schema(user):
         "uid": user.uid,
         "artist_id": user.artist_id,
         "roles": [role.id for role in user.roles],
+        "permissions": [permission.name for permission in user.permissions],
+        "active": user.active,
         "is_deleted": user.is_deleted,
         "created_at": date_to_str(user.created_at) if user.created_at else None,
         "updated_at": date_to_str(user.updated_at) if user.updated_at else None,
