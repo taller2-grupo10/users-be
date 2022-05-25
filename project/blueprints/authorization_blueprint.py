@@ -89,5 +89,6 @@ class Signup(Resource):
                 uid=uid, role_id=ID_USER, artist_id=response["_id"]
             )
         except ValueError as e:
-            return {"message": "Error while creating User", "error": e}, 400
+            print("Error: {}".format(e))
+            return {"message": "Error while creating User"}, 400
         return response, status_code
