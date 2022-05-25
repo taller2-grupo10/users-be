@@ -21,7 +21,7 @@ services:
       context: . 
       dockerfile: DockerfileTest
     command: >
-      bash -c "python -m pytest --cov-report term-missing:skip-covered --cov=project"
+      bash -c "python -m pytest --cov-report term-missing:skip-covered --cov=project --cov-report=xml:coverage.xml"
     volumes:
       - ./:/usr/src/app/
     depends_on:

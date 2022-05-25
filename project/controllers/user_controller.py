@@ -27,21 +27,14 @@ class UserController(BaseController):
     def create(
         cls,
         uid,
-        roles,
+        role_id,
+        artist_id,
     ) -> User:
         """
         Receives user data and additional arguments.
         Returns a new user.
         """
-        if UserController.load_by_uid(uid):
-            raise UserAlreadyExists()
-        try:
-            roles = list(map(int, roles.split(",")))
-        except ValueError:
-            raise ValueError("Roles must be integers")
-
-        new_user = User(uid=uid)
+        new_user = User(uid=uid, artist_id=artist_id)
         cls.save(new_user)
-        for role_id in roles:
-            UserRoleController.create(user_id=new_user.id, role_id=role_id)
+        UserRoleController.create(user_id=new_user.id, role_id=role_id)
         return new_user

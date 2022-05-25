@@ -8,12 +8,8 @@ on:
       DOCKER_HUB_ACCESS_TOKEN:
         required: true
 
-  push:
-    branches-ignore:
-      - 'main'
-      - 'staging'
   pull_request:
-    branches-ignore:
+    branches:
       - 'main'
       - 'staging'
 
@@ -44,3 +40,15 @@ jobs:
 
     - name: Run tests
       run: docker-compose -f docker-compose-test.yml run test
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ./
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
