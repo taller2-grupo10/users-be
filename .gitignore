@@ -29,3 +29,8 @@ pycache
 .env.*
 .vscode/
 .cache/
+pyvenv.cfg
+lib64
+bin
+
+coverage.xml

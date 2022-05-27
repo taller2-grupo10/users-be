@@ -1,9 +1,9 @@
-name: CI/CD - Deploy Production
+name: CI/CD - Deploy Staging
 
 on:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
   test:
@@ -12,7 +12,6 @@ jobs:
       DOCKER_HUB_USERNAME: ${{secrets.DOCKER_HUB_USERNAME}}
       DOCKER_HUB_ACCESS_TOKEN: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
       CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-
 
   deploy:
     needs: test
@@ -24,5 +23,5 @@ jobs:
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME_STAGING}}
           heroku_email: ${{secrets.HEROKU_MAIL}}
