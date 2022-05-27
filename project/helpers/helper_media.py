@@ -51,5 +51,9 @@ class MediaRequester:
 
     @staticmethod
     def delete(endpoint):
-        response = requests.delete(f"{MEDIA_URL}/{endpoint}")
+        response = response = requests.put(
+            f"{MEDIA_URL}/{endpoint}",
+            headers={"Content-Type": "application/json"},
+            json={"isDeleted": True},
+        )
         return response.json(), response.status_code
