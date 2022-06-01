@@ -52,7 +52,10 @@ song_model = api.model(
                         required=True,
                         description="Album identifier",
                     ),
-                    "name": fields.String(required=True, description="Album name"),
+                    "name": fields.String(required=False, description="Album name"),
+                    "photoURL": fields.String(
+                        required=False, description="Album photo URL"
+                    ),
                 },
             )
         ),
