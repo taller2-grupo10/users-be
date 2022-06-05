@@ -36,3 +36,15 @@ class Users(Resource):
     # @check_token
     def get(self):
         return [user_schema(user) for user in UserController.load_all()], 200
+
+@api.route("/id/<id>" , doc={"params": {"id": "User id"}})
+class Users(Resource):
+    # @check_token
+    def get(self, id):
+        user = UserController.load_by_id(id)
+        if not user: 
+          return (
+                  {"message": "user_not_found"},
+                  400,
+            )
+        return user_schema(user), 200
