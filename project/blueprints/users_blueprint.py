@@ -11,6 +11,22 @@ api = Namespace(
     name="Users", path="/admin/users", description="Users related endpoints"
 )
 
+user_model = api.model(
+    "User",
+    {
+        "email": fields.String(required=True, description="User email"),
+    },
+)
+
+
+user_response_model = api.inherit(
+    "User Response",
+    user_model,
+    {
+        "email": fields.String(required=True, description="User email"),
+    },
+)
+
 
 def user_schema(user):
     try:
@@ -40,6 +56,13 @@ class Users(Resource):
 @api.route("/id/<id>" , doc={"params": {"id": "User id"}})
 class Users(Resource):
     # @check_token
+    @api.response(200, "Success", user_response_model)
+    @api.doc(
+        responses={
+            200: "{message: User signed up}",
+            400: "{message: user_not_found}",
+        }
+    )
     def get(self, id):
         user = UserController.load_by_id(id)
         if not user: 
