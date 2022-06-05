@@ -106,9 +106,9 @@ class ArtistById(Resource):
 
         for song in songs:
             song_id = song["_id"]
-            artist_name = artist[0]["name"]
+            artist_name = artist["name"]
             # Modify song artist name if it's the main artist
-            if artist_name == song["artist"]["name"]:
+            if artist_name == song["artists"]["name"]:
                 song_request = {"artist.name": request.json["name"]}
                 _put_song(song_id, song_request)
             # Modify song collaborator name if it's a featured artist
@@ -126,12 +126,11 @@ class ArtistById(Resource):
         )
 
         return (
-            jsonify(
                 {
                     "message": "Artist, albums and songs updated",
                     "data": artist_modification_response,
                 }
-            ),
+            ,
             200,
         )
 
@@ -152,12 +151,10 @@ class ArtistById(Resource):
         artist_delete_response, status_code = MediaRequester.delete(f"artists/{id}")
 
         return (
-            jsonify(
                 {
                     "message": "Artist, albums and songs deleted",
                     "data": artist_delete_response,
-                }
-            ),
+                },
             200,
         )
 
