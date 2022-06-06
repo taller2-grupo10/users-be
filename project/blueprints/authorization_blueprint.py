@@ -76,14 +76,15 @@ class Signup(Resource):
     def post(self):
         uid = request.json["uid"]
         name = request.json["name"]
-        if not uid or not name:
-            return {"message": "No uid/name provided"}, 400
+        location = request.json["location"]
+        if not uid or not name or not location:
+            return {"message": "No uid/name/location provided"}, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
                 return {"message": "User already exists"}, 400
 
-            data = {"uid": uid, "name": name}
+            data = {"uid": uid, "name": name, "location": location}
             response, status_code = MediaRequester.post("artists", data)
             new_user = UserController.create(
                 uid=uid, role_id=ID_USER, artist_id=response["_id"]
