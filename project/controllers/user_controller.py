@@ -1,4 +1,4 @@
-from project.controllers.activatable_object_controller import ActivatableObjectController
+from project.controllers.base_controller import BaseController
 from project.models.user import User
 from project.controllers.user_role_controller import UserRoleController
 
@@ -7,7 +7,7 @@ class UserAlreadyExists(Exception):
     pass
 
 
-class UserController(ActivatableObjectController):
+class UserController(BaseController):
     object_class = User
     null_object_class = None
 
