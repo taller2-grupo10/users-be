@@ -33,3 +33,10 @@ class User(BaseModel):
         self.uid = uid
         self.active = True
         self.artist_id = artist_id
+
+    def _update(self, active=True, **kwargs):
+        """
+        Particular Enableable object update method.
+        """
+        if active is not None:
+            self.active = active
