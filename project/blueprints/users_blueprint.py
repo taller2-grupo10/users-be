@@ -14,19 +14,34 @@ api = Namespace(
 user_model = api.model(
     "User",
     {
-        "email": fields.String(required=True, description="User email"),
+        "active": fields.Boolean(required=False, description="User system status"),
+        "email": fields.String(required=False, description="User email"),
+        "artist_id": fields.String(required=False, description="User artist id"),
+        "createdAt": fields.DateTime(required=False, description="User created at"),
+        "id": fields.String(required=True, description="User id"),
+        "permissions": fields.List(fields.String, required=False, description="User permissions"),
+        "roles": fields.List(fields.Integer, required=False, description="User roles"),
+        "uid": fields.String(required=False, description="User firebase uid"),
+        "updatedAt": fields.DateTime(required=False, description="User updated at"),
     },
 )
-
 
 user_response_model = api.inherit(
     "User Response",
-    user_model,
-    {
-        "email": fields.String(required=True, description="User email"),
-    },
+    user_model
 )
 
+user_put_response_model = api.model(
+    "User Put Response",
+    {
+        "message": fields.String(
+            required=True,
+            description="User updated",
+            example="user_updated",
+        ),
+        "data": fields.Nested(user_response_model),
+    },
+)
 
 def user_schema(user):
     try:
@@ -71,6 +86,15 @@ class Users(Resource):
                   400,
             )
         return user_schema(user), 200
+    @api.expect(user_model)
+    @api.response(200, "Success", user_put_response_model)
     def put(self, id):
       user = UserController.load_updated(id, **request.json)
-      return user_schema(user)
+      return (
+                {
+                    "message": "user_updated",
+                    "data": user_schema(user),
+                }
+            ,
+            200,
+      )
