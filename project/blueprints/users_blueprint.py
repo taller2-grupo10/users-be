@@ -1,5 +1,5 @@
 from firebase_admin import auth
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
 from project.helpers.helper_date import date_to_str
@@ -71,3 +71,6 @@ class Users(Resource):
                   400,
             )
         return user_schema(user), 200
+    def put(self, id):
+      user = UserController.load_updated(id, **request.json)
+      return user_schema(user)

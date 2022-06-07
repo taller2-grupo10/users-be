@@ -79,3 +79,18 @@ class BaseController:
         obj.delete()
         db.session.commit()
         return obj
+
+    @classmethod
+    def load_updated(cls, id: int, **kwargs) -> BaseModel:
+        """
+        Receives an id of a Model object and args.
+        Loads and updates the object with the args, then commits to the database.
+        Returns the updated object.
+        """
+        obj = cls.load_by_id(id)
+        if not obj:
+            return None # TODO: raise exception
+        cls._update(obj, **kwargs)
+        db.session.commit()
+
+        return obj
