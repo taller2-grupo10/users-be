@@ -89,7 +89,7 @@ class BaseController:
         """
         obj = cls.load_by_id(id)
         if not obj:
-            return None # TODO: raise exception
+            return None  # TODO: raise exception
         cls._update(obj, **kwargs)
         db.session.commit()
 

@@ -19,17 +19,16 @@ user_model = api.model(
         "artist_id": fields.String(required=False, description="User artist id"),
         "createdAt": fields.DateTime(required=False, description="User created at"),
         "id": fields.String(required=True, description="User id"),
-        "permissions": fields.List(fields.String, required=False, description="User permissions"),
+        "permissions": fields.List(
+            fields.String, required=False, description="User permissions"
+        ),
         "roles": fields.List(fields.Integer, required=False, description="User roles"),
         "uid": fields.String(required=False, description="User firebase uid"),
         "updatedAt": fields.DateTime(required=False, description="User updated at"),
     },
 )
 
-user_response_model = api.inherit(
-    "User Response",
-    user_model
-)
+user_response_model = api.inherit("User Response", user_model)
 
 user_put_response_model = api.model(
     "User Put Response",
@@ -42,6 +41,7 @@ user_put_response_model = api.model(
         "data": fields.Nested(user_response_model),
     },
 )
+
 
 def user_schema(user):
     try:
@@ -68,8 +68,9 @@ class Users(Resource):
     def get(self):
         return [user_schema(user) for user in UserController.load_all()], 200
 
-@api.route("/id/<id>" , doc={"params": {"id": "User id"}})
-class Users(Resource):
+
+@api.route("/id/<id>", doc={"params": {"id": "User id"}})
+class User(Resource):
     # @check_token
     @api.response(200, "Success", user_response_model)
     @api.doc(
@@ -80,21 +81,21 @@ class Users(Resource):
     )
     def get(self, id):
         user = UserController.load_by_id(id)
-        if not user: 
-          return (
-                  {"message": "user_not_found"},
-                  400,
+        if not user:
+            return (
+                {"message": "user_not_found"},
+                400,
             )
         return user_schema(user), 200
+
     @api.expect(user_model)
     @api.response(200, "Success", user_put_response_model)
     def put(self, id):
-      user = UserController.load_updated(id, **request.json)
-      return (
-                {
-                    "message": "user_updated",
-                    "data": user_schema(user),
-                }
-            ,
+        user = UserController.load_updated(id, **request.json)
+        return (
+            {
+                "message": "user_updated",
+                "data": user_schema(user),
+            },
             200,
-      )
+        )
