@@ -29,12 +29,15 @@ class UserController(BaseController):
         uid,
         role_id,
         artist_id,
+        notification_token,
     ) -> User:
         """
         Receives user data and additional arguments.
         Returns a new user.
         """
-        new_user = User(uid=uid, artist_id=artist_id)
+        new_user = User(
+            uid=uid, artist_id=artist_id, notification_token=notification_token
+        )
         cls.save(new_user)
         UserRoleController.create(user_id=new_user.id, role_id=role_id)
         return new_user

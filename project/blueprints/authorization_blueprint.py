@@ -76,8 +76,9 @@ class Signup(Resource):
     def post(self):
         uid = request.json["uid"]
         name = request.json["name"]
-        if not uid or not name:
-            return {"message": "No uid/name provided"}, 400
+        notification_token = request.json["notification_token"]
+        if not uid or not name or not notification_token:
+            return {"message": "No uid/name/notification_token provided"}, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
@@ -86,7 +87,10 @@ class Signup(Resource):
             data = {"uid": uid, "name": name}
             response, status_code = MediaRequester.post("artists", data)
             new_user = UserController.create(
-                uid=uid, role_id=ID_USER, artist_id=response["_id"]
+                uid=uid,
+                role_id=ID_USER,
+                artist_id=response["_id"],
+                notification_token=notification_token,
             )
         except ValueError as e:
             print("Error: {}".format(e))
