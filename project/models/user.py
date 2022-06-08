@@ -7,9 +7,8 @@ class User(BaseModel):
     __tablename__ = "user"
 
     uid = db.Column(db.String(128), unique=True, nullable=False)
-    active = db.Column(db.Boolean(), default=True, nullable=False)
     artist_id = db.Column(db.String(128), nullable=True)
-
+    active = db.Column(db.Boolean(), default=True, nullable=False)
     users_roles = db.relationship("UserRole", back_populates="user", lazy="joined")
 
     @property
@@ -34,3 +33,10 @@ class User(BaseModel):
         self.uid = uid
         self.active = True
         self.artist_id = artist_id
+
+    def _update(self, active=True, **kwargs):
+        """
+        Particular Enableable object update method.
+        """
+        if active is not None:
+            self.active = active
