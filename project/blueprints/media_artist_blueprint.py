@@ -20,6 +20,10 @@ artist_post_model = api.model(
         ),
         "isDeleted": fields.Boolean(required=False, description="Artist is deleted"),
         "plays": fields.Integer(required=False, description="Artist plays"),
+        "location": fields.String(
+            required=False,
+            description="Any of these locations: 'North America','South America','Central America','Europe','Asia','Africa','Oceania','Antarctica'",
+        ),
     },
 )
 
@@ -126,11 +130,10 @@ class ArtistById(Resource):
         )
 
         return (
-                {
-                    "message": "Artist, albums and songs updated",
-                    "data": artist_modification_response,
-                }
-            ,
+            {
+                "message": "Artist, albums and songs updated",
+                "data": artist_modification_response,
+            },
             200,
         )
 
@@ -151,10 +154,10 @@ class ArtistById(Resource):
         artist_delete_response, status_code = MediaRequester.delete(f"artists/{id}")
 
         return (
-                {
-                    "message": "Artist, albums and songs deleted",
-                    "data": artist_delete_response,
-                },
+            {
+                "message": "Artist, albums and songs deleted",
+                "data": artist_delete_response,
+            },
             200,
         )
 
