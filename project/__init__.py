@@ -53,27 +53,23 @@ def register_blueprints(app):
     from project.blueprints.media_playlist_blueprint import (
         api as media_playlist_namespace,
     )
-    from project.blueprints.media_location_blueprint import (
-        api as media_location_namespace,
-    )
 
     blueprint = Blueprint("api", __name__, url_prefix="/")
 
     api_extension = Api(
         blueprint,
-        title="Spotifiuby Users BE",
+        title="Spotifiuby",
         version="0.1",
         description="Documentation of Spotifiuby",
         doc="/doc",
     )
 
-    api_extension.add_namespace(auth_namespace)
-    api_extension.add_namespace(users_namespace)
     api_extension.add_namespace(media_artist_namespace)
     api_extension.add_namespace(media_album_namespace)
     api_extension.add_namespace(media_song_namespace)
-    api_extension.add_namespace(media_playlist_namespace)
+    api_extension.add_namespace(users_namespace)
+    api_extension.add_namespace(auth_namespace)
     api_extension.add_namespace(media_genres_namespace)
-    api_extension.add_namespace(media_location_namespace)
+    api_extension.add_namespace(media_playlist_namespace)
 
     app.register_blueprint(blueprint)
