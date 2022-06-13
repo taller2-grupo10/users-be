@@ -16,5 +16,6 @@ def test_get_all_users(test_client, init_database, _db, user):
             "created_at": date_to_str(today()),
             "updated_at": None,
             "email": None,
+            "notification_token": "123",
         }
     ]
