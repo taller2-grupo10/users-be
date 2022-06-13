@@ -26,6 +26,10 @@ signup_model = api.model(
             required=True, description="User identifier provided by Firebase"
         ),
         "name": fields.String(required=True, description="Artist/User name"),
+        "location": fields.String(required=True, description="Artist/User location"),
+        "genres": fields.List(
+            fields.String, required=True, description="Artist/User genres"
+        ),
     },
 )
 
@@ -77,14 +81,18 @@ class Signup(Resource):
         uid = request.json["uid"]
         name = request.json["name"]
         notification_token = request.json["notification_token"]
-        if not uid or not name or not notification_token:
-            return {"message": "No uid/name/notification_token provided"}, 400
+        location = request.json["location"]
+        genres = request.json["genres"]
+        if not uid or not name or not location or not genres or not notification_token:
+            return {
+                "message": "No uid/name/location/genres/notification_token provided"
+            }, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
                 return {"message": "User already exists"}, 400
 
-            data = {"uid": uid, "name": name}
+            data = {"uid": uid, "name": name, "location": location, "genres": genres}
             response, status_code = MediaRequester.post("artists", data)
             new_user = UserController.create(
                 uid=uid,
