@@ -37,9 +37,9 @@ class User(BaseModel):
         self.artist_id = artist_id
         self.notification_token = notification_token
 
-    def _update(self, active=True, **kwargs):
+    def _update(self, **kwargs):
         """
         Particular object update method.
         """
-        if active is not None:
-            self.active = active
+        for key, value in kwargs.items():
+            setattr(self, key, value)

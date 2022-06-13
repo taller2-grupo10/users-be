@@ -60,10 +60,13 @@ class Login(Resource):
     @api.response(200, "Success", login_response_model)
     @api.response(400, "{message: No user found}")
     def post(self):
-        uid = request.json["uid"]
+        uid = request.json.get("uid")
+        notification_token = request.json.get("notification_token")
         user = UserController.load_by_uid(uid)
         if not user:
             return {"message": "No user found"}, 400
+        if user.notification_token != notification_token:
+            UserController._update(user, notification_token=notification_token)
         return user_schema(user=user), 200
 
 
@@ -78,11 +81,11 @@ class Signup(Resource):
         }
     )
     def post(self):
-        uid = request.json["uid"]
-        name = request.json["name"]
-        notification_token = request.json["notification_token"]
-        location = request.json["location"]
-        genres = request.json["genres"]
+        uid = request.json.get("uid")
+        name = request.json.get("name")
+        notification_token = request.json.get("notification_token")
+        location = request.json.get("location")
+        genres = request.json.get("genres")
         if not uid or not name or not location or not genres or not notification_token:
             return {
                 "message": "No uid/name/location/genres/notification_token provided"

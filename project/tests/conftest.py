@@ -63,8 +63,10 @@ def _db():
 
 @pytest.fixture(scope="function")
 def user(_db):
-    user = User(uid="test_user", artist_id="1")
+    user = User(uid="test_user", artist_id="1", notification_token="123")
     _db.session.add(user)
     _db.session.commit()
+    return user
+
 
 ### Fixture defines ###
