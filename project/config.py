@@ -27,6 +27,7 @@ class Config(object):
         "FIREBASE_AUTH_PROVIDER_X509_CERT_URL"
     )
     FIREBASE_CLIENT_X509_CERT_URL = os.getenv("FIREBASE_CLIENT_X509_CERT_URL")
+    FIREBASE_DATABASE_URL = os.getenv("FIREBASE_DATABASE_URL")
 
 
 class ConfigTest(object):
