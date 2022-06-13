@@ -26,6 +26,10 @@ signup_model = api.model(
             required=True, description="User identifier provided by Firebase"
         ),
         "name": fields.String(required=True, description="Artist/User name"),
+        "location": fields.String(required=True, description="Artist/User location"),
+        "genres": fields.List(
+            fields.String, required=True, description="Artist/User genres"
+        ),
     },
 )
 
@@ -77,8 +81,9 @@ class Signup(Resource):
         uid = request.json["uid"]
         name = request.json["name"]
         location = request.json["location"]
-        if not uid or not name or not location:
-            return {"message": "No uid/name/location provided"}, 400
+        genres = request.json["genres"]
+        if not uid or not name or not location or not genres:
+            return {"message": "No uid/name/location/genres provided"}, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
