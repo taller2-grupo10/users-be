@@ -16,6 +16,9 @@ login_model = api.model(
         "uid": fields.String(
             required=True, description="User identifier provided by Firebase"
         ),
+        "notification_token": fields.String(
+            required=True, description="Notification token provided by Expo"
+        ),
     },
 )
 
@@ -29,6 +32,9 @@ signup_model = api.model(
         "location": fields.String(required=True, description="Artist/User location"),
         "genres": fields.List(
             fields.String, required=True, description="Artist/User genres"
+        ),
+        "notification_token": fields.String(
+            required=True, description="User notification token"
         ),
     },
 )
