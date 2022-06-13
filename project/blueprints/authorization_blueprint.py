@@ -16,6 +16,9 @@ login_model = api.model(
         "uid": fields.String(
             required=True, description="User identifier provided by Firebase"
         ),
+        "notification_token": fields.String(
+            required=True, description="Notification token provided by Expo"
+        ),
     },
 )
 
@@ -29,6 +32,9 @@ signup_model = api.model(
         "location": fields.String(required=True, description="Artist/User location"),
         "genres": fields.List(
             fields.String, required=True, description="Artist/User genres"
+        ),
+        "notification_token": fields.String(
+            required=True, description="User notification token"
         ),
     },
 )
@@ -60,10 +66,13 @@ class Login(Resource):
     @api.response(200, "Success", login_response_model)
     @api.response(400, "{message: No user found}")
     def post(self):
-        uid = request.json["uid"]
+        uid = request.json.get("uid")
+        notification_token = request.json.get("notification_token")
         user = UserController.load_by_uid(uid)
         if not user:
             return {"message": "No user found"}, 400
+        if user.notification_token != notification_token:
+            UserController._update(user, notification_token=notification_token)
         return user_schema(user=user), 200
 
 
@@ -78,21 +87,27 @@ class Signup(Resource):
         }
     )
     def post(self):
-        uid = request.json["uid"]
-        name = request.json["name"]
-        location = request.json["location"]
-        genres = request.json["genres"]
-        if not uid or not name or not location or not genres:
-            return {"message": "No uid/name/location/genres provided"}, 400
+        uid = request.json.get("uid")
+        name = request.json.get("name")
+        notification_token = request.json.get("notification_token")
+        location = request.json.get("location")
+        genres = request.json.get("genres")
+        if not uid or not name or not location or not genres or not notification_token:
+            return {
+                "message": "No uid/name/location/genres/notification_token provided"
+            }, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
                 return {"message": "User already exists"}, 400
 
-            data = {"uid": uid, "name": name, "location": location}
+            data = {"uid": uid, "name": name, "location": location, "genres": genres}
             response, status_code = MediaRequester.post("artists", data)
             new_user = UserController.create(
-                uid=uid, role_id=ID_USER, artist_id=response["_id"]
+                uid=uid,
+                role_id=ID_USER,
+                artist_id=response["_id"],
+                notification_token=notification_token,
             )
         except ValueError as e:
             print("Error: {}".format(e))

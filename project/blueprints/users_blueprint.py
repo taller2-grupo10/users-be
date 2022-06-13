@@ -25,6 +25,9 @@ user_model = api.model(
         "roles": fields.List(fields.Integer, required=False, description="User roles"),
         "uid": fields.String(required=False, description="User firebase uid"),
         "updatedAt": fields.DateTime(required=False, description="User updated at"),
+        "notificationToken": fields.String(
+            required=False, description="User notification token"
+        ),
     },
 )
 
@@ -59,6 +62,7 @@ def user_schema(user):
         "created_at": date_to_str(user.created_at) if user.created_at else None,
         "updated_at": date_to_str(user.updated_at) if user.updated_at else None,
         "email": email,
+        "notification_token": user.notification_token,
     }
 
 

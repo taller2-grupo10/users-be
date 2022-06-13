@@ -4,7 +4,7 @@ from project.models.user_role import UserRole
 
 
 def test_create_user_role(init_database, _db):
-    user = User(uid="test_user", artist_id="1")
+    user = User(uid="test_user", artist_id="1", notification_token="")
     role = Role(name="Admin", permissions=["admin", "edit", "view"])
     user_role = UserRole(user=user, role=role)
     _db.session.add(user)

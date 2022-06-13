@@ -8,6 +8,8 @@ class User(BaseModel):
 
     uid = db.Column(db.String(128), unique=True, nullable=False)
     artist_id = db.Column(db.String(128), nullable=True)
+    notification_token = db.Column(db.String(128), nullable=True)
+
     active = db.Column(db.Boolean(), default=True, nullable=False)
     users_roles = db.relationship("UserRole", back_populates="user", lazy="joined")
 
@@ -29,14 +31,15 @@ class User(BaseModel):
     def __repr__(self):
         return f"<User {self.uid}>"
 
-    def __init__(self, uid, artist_id):
+    def __init__(self, uid, artist_id, notification_token):
         self.uid = uid
         self.active = True
         self.artist_id = artist_id
+        self.notification_token = notification_token
 
-    def _update(self, active=True, **kwargs):
+    def _update(self, **kwargs):
         """
-        Particular Enableable object update method.
+        Particular object update method.
         """
-        if active is not None:
-            self.active = active
+        for key, value in kwargs.items():
+            setattr(self, key, value)
