@@ -107,7 +107,7 @@ class ChatHandler(Resource):
         receiver = request.get_json().get("receiver")
         sender = request.get_json().get("uid")
         upload_ok = upload_message(sender, receiver, message)
-        notification_ok = True#send_message_notification(sender, receiver, message)
+        notification_ok = send_message_notification(sender, receiver, message)
         if not upload_ok:
             return {"status": "error", "message": "Error sending message"}, 400
         elif not notification_ok:
