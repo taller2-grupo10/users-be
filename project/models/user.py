@@ -7,10 +7,11 @@ class User(BaseModel):
     __tablename__ = "user"
 
     uid = db.Column(db.String(128), unique=True, nullable=False)
+    active = db.Column(db.Boolean(), default=True, nullable=False)
     artist_id = db.Column(db.String(128), nullable=True)
     notification_token = db.Column(db.String(128), nullable=True)
+    wallet_id = db.Column(db.BIGINT(), nullable=True)
 
-    active = db.Column(db.Boolean(), default=True, nullable=False)
     users_roles = db.relationship("UserRole", back_populates="user", lazy="joined")
 
     @property
@@ -31,11 +32,12 @@ class User(BaseModel):
     def __repr__(self):
         return f"<User {self.uid}>"
 
-    def __init__(self, uid, artist_id, notification_token):
+    def __init__(self, uid, artist_id=None, notification_token=None, wallet_id=None):
         self.uid = uid
         self.active = True
         self.artist_id = artist_id
         self.notification_token = notification_token
+        self.wallet_id = wallet_id
 
     def _update(self, **kwargs):
         """
