@@ -1,23 +1,13 @@
 from datetime import datetime
-from urllib import response
-from flask import Blueprint, request
-from project.blueprints.media_artist_blueprint import ArtistById
-from project.helpers.helper_auth import check_token
-from project.helpers.helper_media import MediaRequester
-from flask import jsonify
-from flask_restx import Namespace, Resource, fields
-from project.blueprints.media_genres_blueprint import music_genres_response_model
+
 from firebase_admin import db
+from flask import request
+from flask_restx import Namespace, Resource, fields
+from project.blueprints.media_artist_blueprint import ArtistById
 from project.config import Config
-from exponent_server_sdk import (
-    DeviceNotRegisteredError,
-    PushClient,
-    PushMessage,
-    PushServerError,
-    PushTicketError,
-)
-from requests.exceptions import ConnectionError, HTTPError
-from project.controllers.user_controller import UserController
+from project.helpers.helper_auth import check_token
+from project.helpers.helper_notification import send_notification
+from project.models.user import User
 
 api = Namespace(name="Chat", path="/chat", description="Chat related endpoints")
 
@@ -31,55 +21,34 @@ chat_model = api.model(
 )
 
 
-def send_message_notification(sender, receiver, message):
+def send_new_message_notification(sender_artist_id, recv_artist_id, message):
     """
     Send notification to user
     """
-    user_sender = UserController.get_user_by_uid(sender)
-    user_receiver = UserController.get_user_by_uid(receiver)
-    if user_sender is None or user_receiver is None:
-        return False
-    user_sender_artist, status_code = ArtistById.get(user_sender.artist_id)
-    if status_code != 200:
-        return False
-    user_sender_artist_name = user_sender_artist.get("name")
+    sender_artist = ArtistById.get(sender_artist_id)
+    sender_name = sender_artist.get("name")
+    recv_user = User.query.filter_by(artist_id=recv_artist_id).first()
 
-    response = PushClient().publish(
-        PushMessage(
-            to=user_receiver.notification_token,
-            title=f"New message from {user_sender_artist_name}!",
-            body=message,
-        )
-    )
-
-    try:
-        # We got a response back, but we don't know whether it's an error yet.
-        # This call raises errors so we can handle them with normal exception
-        # flows.
-        response.validate_response()
-    except (DeviceNotRegisteredError, PushTicketError):
-        # Mark the push token as inactive
-        # TODO: logger
-        pass
-        return False
+    title = (f"New message from {sender_name}!",)
+    send_notification(recv_user, title, message)
 
 
-def upload_message(sender, receiver, message):
+def upload_message(sender_artist_id, recv_artist_id, message):
     """
     Upload message to firebase realtime database
     """
     try:
         db_ref = db.reference(url=Config.FIREBASE_DATABASE_URL)
-        joined_uid = sender + "|" + receiver
-        if receiver < sender:
-            joined_uid = receiver + "|" + sender
+        joined_uid = sender_artist_id + "|" + recv_artist_id
+        if recv_artist_id < sender_artist_id:
+            joined_uid = recv_artist_id + "|" + sender_artist_id
 
         db_ref.child("messages").child(f"{joined_uid}").child(
             f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
         ).set(
             {
-                "from": sender,
-                "to": receiver,
+                "from": sender_artist_id,
+                "to": recv_artist_id,
                 "message": message,
             }
         )
@@ -90,8 +59,7 @@ def upload_message(sender, receiver, message):
 
 @api.route("")
 class ChatHandler(Resource):
-
-    # @check_token
+    @check_token
     @api.expect(chat_model)
     @api.doc(
         responses={
@@ -103,11 +71,14 @@ class ChatHandler(Resource):
         """
         Uploads a chat message to the database and sends a notification to the other user
         """
+        sender_artist_id = request.user.artist_id
+        recv_artist_id = request.get_json().get("receiver")
         message = request.get_json().get("message")
-        receiver = request.get_json().get("receiver")
-        sender = request.get_json().get("uid")
-        upload_ok = upload_message(sender, receiver, message)
-        notification_ok = send_message_notification(sender, receiver, message)
+
+        upload_ok = upload_message(sender_artist_id, recv_artist_id, message)
+        notification_ok = send_new_message_notification(
+            sender_artist_id, recv_artist_id, message
+        )
         if not upload_ok:
             return {"status": "error", "message": "Error sending message"}, 400
         elif not notification_ok:
