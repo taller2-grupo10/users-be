@@ -66,3 +66,4 @@ uritemplate==4.1.1
 urllib3==1.26.9
 Werkzeug==2.1.1
 zipp==3.8.0
+exponent-server-sdk==2.0.0
