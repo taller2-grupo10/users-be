@@ -7,6 +7,7 @@ from project.blueprints.media_artist_blueprint import ArtistById
 from project.config import Config
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
+from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_notification import send_notification
 
 api = Namespace(name="Chat", path="/chat", description="Chat related endpoints")
@@ -25,12 +26,12 @@ def send_new_message_notification(sender_artist_id, recv_uid, message):
     """
     Send notification to user
     """
-    sender_artist = ArtistById.get(sender_artist_id)
+    sender_artist, status_code = MediaRequester.get(f"artists/{sender_artist_id}")
     sender_name = sender_artist.get("name")
     recv_user = UserController.load_by_uid(recv_uid)
 
-    title = (f"New message from {sender_name}!",)
-    send_notification(recv_user, title, message)
+    title = f"New message from {sender_name}!"
+    return send_notification(recv_user, title, message)
 
 
 def upload_message(sender_uid, recv_uid, message):
