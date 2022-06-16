@@ -5,9 +5,9 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from project.blueprints.media_artist_blueprint import ArtistById
 from project.config import Config
+from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
 from project.helpers.helper_notification import send_notification
-from project.models.user import User
 
 api = Namespace(name="Chat", path="/chat", description="Chat related endpoints")
 
@@ -21,34 +21,34 @@ chat_model = api.model(
 )
 
 
-def send_new_message_notification(sender_artist_id, recv_artist_id, message):
+def send_new_message_notification(sender_artist_id, recv_uid, message):
     """
     Send notification to user
     """
     sender_artist = ArtistById.get(sender_artist_id)
     sender_name = sender_artist.get("name")
-    recv_user = User.query.filter_by(artist_id=recv_artist_id).first()
+    recv_user = UserController.load_by_uid(recv_uid)
 
     title = (f"New message from {sender_name}!",)
     send_notification(recv_user, title, message)
 
 
-def upload_message(sender_artist_id, recv_artist_id, message):
+def upload_message(sender_uid, recv_uid, message):
     """
     Upload message to firebase realtime database
     """
     try:
         db_ref = db.reference(url=Config.FIREBASE_DATABASE_URL)
-        joined_uid = sender_artist_id + "|" + recv_artist_id
-        if recv_artist_id < sender_artist_id:
-            joined_uid = recv_artist_id + "|" + sender_artist_id
+        joined_uid = sender_uid + "|" + recv_uid
+        if recv_uid < sender_uid:
+            joined_uid = recv_uid + "|" + sender_uid
 
         db_ref.child("messages").child(f"{joined_uid}").child(
             f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
         ).set(
             {
-                "from": sender_artist_id,
-                "to": recv_artist_id,
+                "from": sender_uid,
+                "to": recv_uid,
                 "message": message,
             }
         )
@@ -71,13 +71,13 @@ class ChatHandler(Resource):
         """
         Uploads a chat message to the database and sends a notification to the other user
         """
-        sender_artist_id = request.user.artist_id
-        recv_artist_id = request.get_json().get("receiver")
+        sender_uid = request.user.uid
+        recv_uid = request.get_json().get("receiver")
         message = request.get_json().get("message")
 
-        upload_ok = upload_message(sender_artist_id, recv_artist_id, message)
+        upload_ok = upload_message(sender_uid, recv_uid, message)
         notification_ok = send_new_message_notification(
-            sender_artist_id, recv_artist_id, message
+            request.user.artist_id, recv_uid, message
         )
         if not upload_ok:
             return {"status": "error", "message": "Error sending message"}, 400
