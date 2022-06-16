@@ -3,6 +3,7 @@ from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token, is_valid_token
 from project.helpers.helper_media import MediaRequester
+from project.helpers.helper_payments import PaymentRequester
 from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
 from flask_restx import Namespace, Resource, fields
 
@@ -16,6 +17,9 @@ login_model = api.model(
         "uid": fields.String(
             required=True, description="User identifier provided by Firebase"
         ),
+        "notification_token": fields.String(
+            required=True, description="Notification token provided by Expo"
+        ),
     },
 )
 
@@ -26,6 +30,13 @@ signup_model = api.model(
             required=True, description="User identifier provided by Firebase"
         ),
         "name": fields.String(required=True, description="Artist/User name"),
+        "location": fields.String(required=True, description="Artist/User location"),
+        "genres": fields.List(
+            fields.String, required=True, description="Artist/User genres"
+        ),
+        "notification_token": fields.String(
+            required=True, description="User notification token"
+        ),
     },
 )
 
@@ -56,10 +67,13 @@ class Login(Resource):
     @api.response(200, "Success", login_response_model)
     @api.response(400, "{message: No user found}")
     def post(self):
-        uid = request.json["uid"]
+        uid = request.json.get("uid")
+        notification_token = request.json.get("notification_token")
         user = UserController.load_by_uid(uid)
         if not user:
             return {"message": "No user found"}, 400
+        if user.notification_token != notification_token:
+            UserController._update(user, notification_token=notification_token)
         return user_schema(user=user), 200
 
 
@@ -74,21 +88,32 @@ class Signup(Resource):
         }
     )
     def post(self):
-        uid = request.json["uid"]
-        name = request.json["name"]
-        if not uid or not name:
-            return {"message": "No uid/name provided"}, 400
+        uid = request.json.get("uid")
+        name = request.json.get("name")
+        notification_token = request.json.get("notification_token")
+        location = request.json.get("location")
+        genres = request.json.get("genres")
+        if not uid or not name or not location or not genres or not notification_token:
+            return {
+                "message": "No uid/name/location/genres/notification_token provided"
+            }, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
                 return {"message": "User already exists"}, 400
 
-            data = {"uid": uid, "name": name}
-            response, status_code = MediaRequester.post("artists", data)
+            data = {"uid": uid, "name": name, "location": location, "genres": genres}
+            response_media, status_code = MediaRequester.post("artists", data)
+            response_payment, status_code = PaymentRequester.create_wallet()
+
             new_user = UserController.create(
-                uid=uid, role_id=ID_USER, artist_id=response["_id"]
+                uid=uid,
+                role_id=ID_USER,
+                artist_id=response_media["_id"],
+                notification_token=notification_token,
+                wallet_id=response_payment["id"],
             )
         except ValueError as e:
             print("Error: {}".format(e))
             return {"message": "Error while creating User"}, 400
-        return response, status_code
+        return response_media, status_code

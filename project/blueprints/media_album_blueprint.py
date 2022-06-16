@@ -138,7 +138,7 @@ class AlbumsById(Resource):
         )
 
         return (
-            jsonify({"message": "Album and Songs updated", "data": album_put_response}),
+            {"message": "Album and Songs updated", "data": album_put_response},
             200,
         )
 
@@ -154,9 +154,7 @@ class AlbumsById(Resource):
         album_delete_response, status_code = MediaRequester.delete(f"albums/{id}")
 
         return (
-            jsonify(
-                {"message": "Album and Songs deleted", "data": album_delete_response}
-            ),
+                {"message": "Album and Songs deleted", "data": album_delete_response},
             200,
         )
 
