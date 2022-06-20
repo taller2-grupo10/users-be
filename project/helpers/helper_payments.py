@@ -1,5 +1,6 @@
 import os
 import requests
+from project.models.user_payment import UserPayment
 
 PAYMENT_URL = os.getenv("PAYMENT_ENDPOINT", "http://0.0.0.0:7000")
 
@@ -21,7 +22,7 @@ class PaymentRequester:
     def deposit(sender_id, amount_in_ethers):
         response = requests.post(
             f"{PAYMENT_URL}/deposit",
-            json={"senderId": sender_id, "amountInEthers": amount_in_ethers},
+            json={"senderId": sender_id, "amountInEthers": str(amount_in_ethers)},
         )
         return response.json(), response.status_code
 
@@ -29,3 +30,14 @@ class PaymentRequester:
     def get_balance(wallet_id):
         response = requests.get(f"{PAYMENT_URL}/balance/{wallet_id}")
         return response.json(), response.status_code
+
+    @staticmethod
+    def get_subscription_level(user_id):
+        payments = UserPayment.query.filter_by(user_id=user_id).all()
+        payments.sort(key=lambda x: x.created_at, reverse=True)
+        max_subscription_level = 0
+        for payment in payments:
+            response = requests.get(f"{PAYMENT_URL}/deposit/{payment.transaction_hash}")
+            if response.status_code == 200:
+                max_subscription_level = payment.subscription_id
+        return max_subscription_level, response.status_code
