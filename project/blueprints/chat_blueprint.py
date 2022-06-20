@@ -89,3 +89,10 @@ class ChatHandler(Resource):
                 "status": "success",
                 "message": "Message and notification sent",
             }, 200
+
+
+@api.route("/debug")
+class ChatDebugHandler(Resource):
+    def post(self):
+        print(request.get_json())
+        return {}, 200
