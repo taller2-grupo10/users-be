@@ -14,6 +14,8 @@ def send_notification(user, title, message):
     Send notification to user
     """
     response = None
+    if not user or not user.notification_token:
+        return True  # no user/notificion token found -> does not mean erorr
     try:
         response = PushClient().publish(
             PushMessage(
