@@ -3,6 +3,7 @@ from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token, is_valid_token
 from project.helpers.helper_media import MediaRequester
+from project.helpers.helper_payments import PaymentRequester
 from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
 from flask_restx import Namespace, Resource, fields
 
@@ -102,14 +103,17 @@ class Signup(Resource):
                 return {"message": "User already exists"}, 400
 
             data = {"uid": uid, "name": name, "location": location, "genres": genres}
-            response, status_code = MediaRequester.post("artists", data)
+            response_media, status_code = MediaRequester.post("artists", data)
+            response_payment, status_code = PaymentRequester.create_wallet()
+
             new_user = UserController.create(
                 uid=uid,
                 role_id=ID_USER,
-                artist_id=response["_id"],
+                artist_id=response_media["_id"],
                 notification_token=notification_token,
+                wallet_id=response_payment["id"],
             )
         except ValueError as e:
             print("Error: {}".format(e))
             return {"message": "Error while creating User"}, 400
-        return response, status_code
+        return response_media, status_code
