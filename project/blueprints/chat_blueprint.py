@@ -22,16 +22,19 @@ chat_model = api.model(
 )
 
 
-def send_new_message_notification(sender_artist_id, recv_uid, message):
+def send_new_message_notification(sender_user, recv_uid, message):
     """
     Send notification to user
     """
+    sender_uid = sender_user.uid
+    sender_artist_id = sender_user.artist_id
     sender_artist, status_code = MediaRequester.get(f"artists/{sender_artist_id}")
     sender_name = sender_artist.get("name")
     recv_user = UserController.load_by_uid(recv_uid)
 
     title = f"New message from {sender_name}!"
-    return send_notification(recv_user, title, message)
+    data = {"uid": sender_uid, "name": sender_name, "type": "message"}
+    return send_notification(recv_user, title, message, data)
 
 
 def upload_message(sender_uid, recv_uid, message):
@@ -77,9 +80,7 @@ class ChatHandler(Resource):
         message = request.get_json().get("message")
 
         upload_ok = upload_message(sender_uid, recv_uid, message)
-        notification_ok = send_new_message_notification(
-            request.user.artist_id, recv_uid, message
-        )
+        notification_ok = send_new_message_notification(request.user, recv_uid, message)
         if not upload_ok:
             return {"status": "error", "message": "Error sending message"}, 400
         elif not notification_ok:
@@ -89,6 +90,7 @@ class ChatHandler(Resource):
                 "status": "success",
                 "message": "Message and notification sent",
             }, 200
+
 
 @api.route("/debug")
 class ChatDebugHandler(Resource):

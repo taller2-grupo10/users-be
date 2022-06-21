@@ -9,7 +9,7 @@ from exponent_server_sdk import (
 )
 
 
-def send_notification(user, title, message):
+def send_notification(user, title, message, data):
     """
     Send notification to user
     """
@@ -22,6 +22,7 @@ def send_notification(user, title, message):
                 to=user.notification_token,
                 title=title,
                 body=message,
+                data=data
             )
         )
     except PushServerError as err:
