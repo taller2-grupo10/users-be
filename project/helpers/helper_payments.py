@@ -34,10 +34,13 @@ class PaymentRequester:
     @staticmethod
     def get_subscription_level(user_id):
         payments = UserPayment.query.filter_by(user_id=user_id).all()
-        payments.sort(key=lambda x: x.created_at, reverse=True)
+        payments.sort(key=lambda x: x.created_at)
         max_subscription_level = 0
         for payment in payments:
             response = requests.get(f"{PAYMENT_URL}/deposit/{payment.transaction_hash}")
-            if response.status_code == 200:
+            if (
+                response.status_code == 200
+                and payment.subscription_id > max_subscription_level
+            ):
                 max_subscription_level = payment.subscription_id
         return max_subscription_level, response.status_code
