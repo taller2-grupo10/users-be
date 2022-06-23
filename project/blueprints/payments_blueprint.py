@@ -23,6 +23,9 @@ class PaymentDeposit(Resource):
         response, status_code = PaymentRequester.deposit(
             wallet_id, subscription.price_in_ethers
         )
+        if status_code != 200:
+            return {"code": response["code"]}, status_code
+
         payment = UserPayment(request.user.id, subscription_id, response["hash"])
         # TODO: move to controller
         from project import db
