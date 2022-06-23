@@ -72,7 +72,7 @@ class Login(Resource):
         user = UserController.load_by_uid(uid)
         if not user:
             return {"message": "No user found"}, 400
-        if user.notification_token != notification_token:
+        if notification_token and user.notification_token != notification_token:
             UserController._update(user, notification_token=notification_token)
         return user_schema(user=user), 200
 
@@ -93,10 +93,8 @@ class Signup(Resource):
         notification_token = request.json.get("notification_token")
         location = request.json.get("location")
         genres = request.json.get("genres")
-        if not uid or not name or not location or not genres or not notification_token:
-            return {
-                "message": "No uid/name/location/genres/notification_token provided"
-            }, 400
+        if not uid or not name or not location or not genres:
+            return {"message": "No uid/name/location/genres provided"}, 400
         try:
             user = UserController.load_by_uid(uid)
             if user:
