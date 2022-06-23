@@ -43,4 +43,4 @@ class PaymentRequester:
                 and payment.subscription_id > max_subscription_level
             ):
                 max_subscription_level = payment.subscription_id
-        return max_subscription_level, response.status_code
+        return max_subscription_level, 200
