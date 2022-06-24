@@ -27,6 +27,7 @@ venv/
 
 pycache
 .env.*
+.env.dev
 .vscode/
 .cache/
 pyvenv.cfg
