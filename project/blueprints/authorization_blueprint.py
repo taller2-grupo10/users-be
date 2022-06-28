@@ -102,7 +102,7 @@ class Login(Resource):
         user = UserController.load_by_uid(uid)
         if not user:
             return {"message": "No user found"}, 400
-        if user.notification_token != notification_token:
+        if notification_token and user.notification_token != notification_token:
             UserController._update(user, notification_token=notification_token)
         return user_schema(user=user), 200
 
