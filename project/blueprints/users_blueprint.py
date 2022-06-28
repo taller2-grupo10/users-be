@@ -68,14 +68,14 @@ def user_schema(user):
 
 @api.route("")
 class Users(Resource):
-    # @check_token
+    @check_token
     def get(self):
         return [user_schema(user) for user in UserController.load_all()], 200
 
 
 @api.route("/id/<id>", doc={"params": {"id": "User id"}})
 class User(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", user_response_model)
     @api.doc(
         responses={
