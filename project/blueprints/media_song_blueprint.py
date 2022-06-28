@@ -61,6 +61,9 @@ song_model = api.model(
         ),
         "filename": fields.String(required=True, description="Song filename"),
         "genres": music_genres_response_model,
+        "subscriptionLevel": fields.String(
+            required=False, description="Subscription level"
+        ),
     },
 )
 
