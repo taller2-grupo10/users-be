@@ -12,13 +12,15 @@ MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
 
 class MediaRequester:
     @staticmethod
-    def get(endpoint, request):
-        max_subscription_level, status_code = PaymentRequester.get_subscription_level(
-            request.user.id
-        )
-        subscription_query = "?subscriptionLevel=" + str(max_subscription_level)
-        if status_code != 200:
-            subscription_query = ""
+    def get(endpoint, user_id=None):
+        subscription_query = ""
+        if user_id is not None:
+            (
+                max_subscription_level,
+                status_code,
+            ) = PaymentRequester.get_subscription_level(user_id)
+            if status_code == 200:
+                subscription_query = "?subscriptionLevel=" + str(max_subscription_level)
         response = requests.get(f"{MEDIA_URL}/{endpoint}{subscription_query}")
         return response.json(), response.status_code
 

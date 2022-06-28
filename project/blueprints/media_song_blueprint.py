@@ -131,7 +131,9 @@ class SongsByName(Resource):
     # @check_token
     @api.response(200, "Success", song_response_model)
     def get(self, name):
-        response, status_code = MediaRequester.get(f"songs/name/{name}")
+        response, status_code = MediaRequester.get(
+            f"songs/name/{name}", user_id=request.user.id
+        )
         return response, status_code
 
 
@@ -140,7 +142,9 @@ class SongsByAlbumId(Resource):
     # @check_token
     @api.response(200, "Success", song_response_model)
     def get(self, albumId):
-        response, status_code = MediaRequester.get(f"songs/albumId/{albumId}")
+        response, status_code = MediaRequester.get(
+            f"songs/albumId/{albumId}", user_id=request.user.id
+        )
         return response, status_code
 
 
@@ -149,7 +153,9 @@ class SongsByArtistId(Resource):
     # @check_token
     @api.response(200, "Success", song_response_model)
     def get(self, artistId):
-        response, status_code = MediaRequester.get(f"songs/artistId/{artistId}")
+        response, status_code = MediaRequester.get(
+            f"songs/artistId/{artistId}", user_id=request.user.id
+        )
         return response, status_code
 
 
@@ -158,5 +164,7 @@ class SongsByGenreName(Resource):
     # @check_token
     @api.response(200, "Success", song_response_model)
     def get(self, genreName):
-        response, status_code = MediaRequester.get(f"songs/genre/{genreName}")
+        response, status_code = MediaRequester.get(
+            f"songs/genre/{genreName}", user_id=request.user.id
+        )
         return response, status_code

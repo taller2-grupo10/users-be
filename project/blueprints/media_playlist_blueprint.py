@@ -50,7 +50,9 @@ class PlaylistById(Resource):
     # @check_token
     @api.response(200, "Success", playlist_response_model)
     def get(self, id):
-        response, status_code = MediaRequester.get(f"playlists/{id}")
+        response, status_code = MediaRequester.get(
+            f"playlists/{id}", user_id=request.user.id
+        )
         return response, status_code
 
     # @check_token
@@ -72,5 +74,7 @@ class PlaylistByUser(Resource):
     # @check_token
     @api.response(200, "Success", playlist_response_model)
     def get(self, id):
-        response, status_code = MediaRequester.get(f"playlists/userId/{id}")
+        response, status_code = MediaRequester.get(
+            f"playlists/userId/{id}", user_id=request.user.id
+        )
         return response, status_code
