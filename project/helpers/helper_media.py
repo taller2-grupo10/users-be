@@ -11,14 +11,22 @@ MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
 class MediaRequester:
     @staticmethod
     def get(endpoint):
-        response = requests.get(f"{MEDIA_URL}/{endpoint}")
+        response = requests.get(
+            f"{MEDIA_URL}/{endpoint}",
+            headers={
+                "api_media": os.getenv("API_TOKEN"),
+            },
+        )
         return response.json(), response.status_code
 
     @staticmethod
     def post(endpoint, data):
         response = requests.post(
             f"{MEDIA_URL}/{endpoint}",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "api_media": os.getenv("API_TOKEN"),
+            },
             json=data,
         )
         return response.json(), response.status_code
@@ -37,6 +45,7 @@ class MediaRequester:
                 ),
                 "data": files["data"],
             },
+            headers={"api_media": os.getenv("API_TOKEN")},
         )
         return response.json(), response.status_code
 
@@ -44,7 +53,10 @@ class MediaRequester:
     def put(endpoint, data):
         response = requests.put(
             f"{MEDIA_URL}/{endpoint}",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "api_media": os.getenv("API_TOKEN"),
+            },
             json=data,
         )
         return response.json(), response.status_code
@@ -53,7 +65,10 @@ class MediaRequester:
     def delete(endpoint):
         response = response = requests.put(
             f"{MEDIA_URL}/{endpoint}",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "api_media": os.getenv("API_TOKEN"),
+            },
             json={"isDeleted": True},
         )
         return response.json(), response.status_code
