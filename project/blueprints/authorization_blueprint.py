@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
-from project.helpers.helper_auth import check_token, is_valid_token
+from project.helpers.helper_auth import check_token, is_valid_token, check_permissions
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
 from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
@@ -60,6 +60,36 @@ login_response_model = api.inherit(
 )
 
 
+def sign_up(role_id):
+    uid = request.json.get("uid")
+    name = request.json.get("name")
+    notification_token = request.json.get("notification_token")
+    location = request.json.get("location")
+    genres = request.json.get("genres")
+    if not uid or not name or not location or not genres:
+        return {"message": "No uid/name/location/genres provided"}, 400
+    try:
+        user = UserController.load_by_uid(uid)
+        if user:
+            return {"message": "User already exists"}, 400
+
+        data = {"uid": uid, "name": name, "location": location, "genres": genres}
+        response_media, status_code = MediaRequester.post("artists", data)
+        response_payment, status_code = PaymentRequester.create_wallet()
+
+        new_user = UserController.create(
+            uid=uid,
+            role_id=role_id,
+            artist_id=response_media["_id"],
+            notification_token=notification_token,
+            wallet_id=response_payment["id"],
+        )
+    except ValueError as e:
+        print("Error: {}".format(e))
+        return {"message": "Error while creating User"}, 400
+    return response_media, status_code
+
+
 @api.route("/login")
 class Login(Resource):
     @check_token
@@ -88,30 +118,22 @@ class Signup(Resource):
         }
     )
     def post(self):
-        uid = request.json.get("uid")
-        name = request.json.get("name")
-        notification_token = request.json.get("notification_token")
-        location = request.json.get("location")
-        genres = request.json.get("genres")
-        if not uid or not name or not location or not genres:
-            return {"message": "No uid/name/location/genres provided"}, 400
-        try:
-            user = UserController.load_by_uid(uid)
-            if user:
-                return {"message": "User already exists"}, 400
+        return sign_up(ID_USER)
 
-            data = {"uid": uid, "name": name, "location": location, "genres": genres}
-            response_media, status_code = MediaRequester.post("artists", data)
-            response_payment, status_code = PaymentRequester.create_wallet()
 
-            new_user = UserController.create(
-                uid=uid,
-                role_id=ID_USER,
-                artist_id=response_media["_id"],
-                notification_token=notification_token,
-                wallet_id=response_payment["id"],
-            )
-        except ValueError as e:
-            print("Error: {}".format(e))
-            return {"message": "Error while creating User"}, 400
-        return response_media, status_code
+@api.route("/signup/admin")
+class AdminSignup(Resource):
+    @check_token
+    @check_permissions(["admin_creation"])
+    @api.expect(signup_model)
+    def post(self):
+        return sign_up(ID_ADMIN)
+
+
+@api.route("/signup/superadmin")
+class AdminSignup(Resource):
+    @check_token
+    @check_permissions(["superadmin_creation"])
+    @api.expect(signup_model)
+    def post(self):
+        return sign_up(ID_SUPERADMIN)
