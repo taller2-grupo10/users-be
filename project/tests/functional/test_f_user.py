@@ -1,6 +1,8 @@
+import pytest
 from project.helpers.helper_date import date_to_str, today
 
 
+@pytest.mark.skip
 def test_get_all_users(test_client, init_database, _db, user):
     response = test_client.get("/admin/users")
     assert response.status_code == 200

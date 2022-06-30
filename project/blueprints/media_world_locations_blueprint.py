@@ -32,7 +32,7 @@ world_locations_response_model = fields.List(
 
 @api.route("")
 class WorldLocations(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", world_locations_response_model)
     def get(self):
         response, status_code = MediaRequester.get(f"locations")

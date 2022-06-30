@@ -34,7 +34,7 @@ playlist_response_model = api.inherit(
 @api.route("")
 class Playlist(Resource):
 
-    # @check_token
+    @check_token
     @api.expect(playlist_model)
     @api.response(200, "Success", playlist_response_model)
     def post(self):
@@ -47,20 +47,22 @@ class Playlist(Resource):
 
 @api.route("/id/<id>", doc={"params": {"id": "Playlist id"}})
 class PlaylistById(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", playlist_response_model)
     def get(self, id):
-        response, status_code = MediaRequester.get(f"playlists/{id}")
+        response, status_code = MediaRequester.get(
+            f"playlists/{id}", user_id=request.user.id
+        )
         return response, status_code
 
-    # @check_token
+    @check_token
     @api.expect(playlist_model)
     @api.response(200, "Success", playlist_response_model)
     def put(self, id):
         response, status_code = MediaRequester.put(f"playlists/{id}", request.json)
         return response, status_code
 
-    # @check_token
+    @check_token
     @api.response(200, "Success", playlist_response_model)
     def delete(self, id):
         response, status_code = MediaRequester.delete(f"playlists/{id}")
@@ -69,8 +71,10 @@ class PlaylistById(Resource):
 
 @api.route("/user/<id>", doc={"params": {"id": "User/Artist id"}})
 class PlaylistByUser(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", playlist_response_model)
     def get(self, id):
-        response, status_code = MediaRequester.get(f"playlists/userId/{id}")
+        response, status_code = MediaRequester.get(
+            f"playlists/userId/{id}", user_id=request.user.id
+        )
         return response, status_code
