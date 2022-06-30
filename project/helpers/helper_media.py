@@ -3,9 +3,9 @@ import json
 import os
 
 import requests
-from flask import jsonify
 
 MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
+from project.helpers.helper_api_token import API_TOKEN
 
 
 class MediaRequester:
@@ -14,7 +14,7 @@ class MediaRequester:
         response = requests.get(
             f"{MEDIA_URL}/{endpoint}",
             headers={
-                "api_media": os.getenv("API_TOKEN"),
+                "api_media": API_TOKEN,
             },
         )
         return response.json(), response.status_code
@@ -25,7 +25,7 @@ class MediaRequester:
             f"{MEDIA_URL}/{endpoint}",
             headers={
                 "Content-Type": "application/json",
-                "api_media": os.getenv("API_TOKEN"),
+                "api_media": API_TOKEN,
             },
             json=data,
         )
@@ -45,7 +45,7 @@ class MediaRequester:
                 ),
                 "data": files["data"],
             },
-            headers={"api_media": os.getenv("API_TOKEN")},
+            headers={"api_media": API_TOKEN},
         )
         return response.json(), response.status_code
 
@@ -55,7 +55,7 @@ class MediaRequester:
             f"{MEDIA_URL}/{endpoint}",
             headers={
                 "Content-Type": "application/json",
-                "api_media": os.getenv("API_TOKEN"),
+                "api_media": API_TOKEN,
             },
             json=data,
         )
@@ -67,7 +67,7 @@ class MediaRequester:
             f"{MEDIA_URL}/{endpoint}",
             headers={
                 "Content-Type": "application/json",
-                "api_media": os.getenv("API_TOKEN"),
+                "api_media": API_TOKEN,
             },
             json={"isDeleted": True},
         )

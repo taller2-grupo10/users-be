@@ -63,6 +63,9 @@ def register_blueprints(app):
     from project.blueprints.subscriptions_blueprint import (
         api as subscriptions_namespace,
     )
+    from project.blueprints.api_token_blueprint import (
+        api as api_token_namespace,
+    )
 
     blueprint = Blueprint("api", __name__, url_prefix="/")
 
@@ -85,5 +88,6 @@ def register_blueprints(app):
     api_extension.add_namespace(payments_namespace)
     api_extension.add_namespace(chat_namespace)
     api_extension.add_namespace(subscriptions_namespace)
+    api_extension.add_namespace(api_token_namespace)
 
     app.register_blueprint(blueprint)

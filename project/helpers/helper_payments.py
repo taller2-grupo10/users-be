@@ -1,8 +1,10 @@
 import os
+
 import requests
 from project.models.user_payment import UserPayment
 
 PAYMENT_URL = os.getenv("PAYMENT_ENDPOINT", "http://0.0.0.0:7000")
+from project.helpers.helper_api_token import API_TOKEN
 
 
 class PaymentRequester:
@@ -10,7 +12,7 @@ class PaymentRequester:
     def create_wallet():
         response = requests.post(
             f"{PAYMENT_URL}/wallet",
-            headers={"api_payments": os.getenv("API_TOKEN")},
+            headers={"api_payments": API_TOKEN},
         )
         return response.json(), response.status_code
 
@@ -18,7 +20,7 @@ class PaymentRequester:
     def get_address(wallet_id):
         response = requests.get(
             f"{PAYMENT_URL}/wallet/{wallet_id}",
-            headers={"api_payments": os.getenv("API_TOKEN")},
+            headers={"api_payments": API_TOKEN},
         )
         return response.json(), response.status_code
 
@@ -27,7 +29,7 @@ class PaymentRequester:
         response = requests.post(
             f"{PAYMENT_URL}/deposit",
             json={"senderId": sender_id, "amountInEthers": str(amount_in_ethers)},
-            headers={"api_payments": os.getenv("API_TOKEN")},
+            headers={"api_payments": API_TOKEN},
         )
         return response.json(), response.status_code
 
@@ -35,7 +37,7 @@ class PaymentRequester:
     def get_balance(wallet_id):
         response = requests.get(
             f"{PAYMENT_URL}/balance/{wallet_id}",
-            headers={"api_payments": os.getenv("API_TOKEN")},
+            headers={"api_payments": API_TOKEN},
         )
         return response.json(), response.status_code
 
@@ -47,7 +49,7 @@ class PaymentRequester:
         for payment in payments:
             response = requests.get(
                 f"{PAYMENT_URL}/deposit/{payment.transaction_hash}",
-                headers={"api_payments": os.getenv("API_TOKEN")},
+                headers={"api_payments": API_TOKEN},
             )
             if (
                 response.status_code == 200
