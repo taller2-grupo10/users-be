@@ -172,3 +172,17 @@ class SongsByGenreName(Resource):
             f"songs/genre/{genreName}", user_id=request.user.id
         )
         return response, status_code
+
+
+@api.route(
+    "/subscription/<subscriptionLevel>",
+    doc={"params": {"subscriptionLevel": "Subscription level"}},
+)
+class SongsBySubscriptionLevel(Resource):
+    @check_token
+    @api.response(200, "Success", song_response_model)
+    def get(self, subscriptionLevel):
+        response, status_code = MediaRequester.get(
+            f"songs/subscription/{subscriptionLevel}", user_id=request.user.id
+        )
+        return response, status_code
