@@ -104,12 +104,7 @@ class Songs(Resource):
     @check_token
     @api.response(200, "Success", song_response_model)
     def get(self):
-        isActiveQuery = (
-            f"?isActive={request.args.get('isActive')}"
-            if request.args.get("isActive")
-            else ""
-        )
-        response, status_code = MediaRequester.get(f"songs{isActiveQuery}")
+        response, status_code = MediaRequester.get(f"songs")
         return response, status_code
 
 
