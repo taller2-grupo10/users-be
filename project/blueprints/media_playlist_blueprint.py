@@ -124,7 +124,7 @@ def send_new_collaborator_notification(
         "uid": sender_uid,
         "name": sender_name,
         "type": "playlist_add",
-        "playlist_id": playlist_id,
+        "playlistId": playlist_id,
     }
     message = (
         f"{sender_name} added you as collaborator to their Playlist: {playlist_title}"
