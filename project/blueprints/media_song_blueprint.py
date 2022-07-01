@@ -64,6 +64,7 @@ song_model = api.model(
         "subscriptionLevel": fields.String(
             required=False, description="Subscription level"
         ),
+        "isActive": fields.Boolean(required=False, description="Song is active"),
     },
 )
 
@@ -103,7 +104,12 @@ class Songs(Resource):
     @check_token
     @api.response(200, "Success", song_response_model)
     def get(self):
-        response, status_code = MediaRequester.get("songs")
+        isActiveQuery = (
+            f"?isActive={request.args.get('isActive')}"
+            if request.args.get("isActive")
+            else ""
+        )
+        response, status_code = MediaRequester.get(f"songs{isActiveQuery}")
         return response, status_code
 
 
