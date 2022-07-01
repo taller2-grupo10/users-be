@@ -21,10 +21,12 @@ class MediaRequester:
             ) = PaymentRequester.get_subscription_level(user_id)
             if status_code == 200:
                 subscription_query = "?subscriptionLevel=" + str(max_subscription_level)
-        response = requests.get(f"{MEDIA_URL}/{endpoint}{subscription_query}", 
-              headers={
+        response = requests.get(
+            f"{MEDIA_URL}/{endpoint}{subscription_query}",
+            headers={
                 "api_media": API_TOKEN,
-              },)
+            },
+        )
         return response.json(), response.status_code
 
     @staticmethod

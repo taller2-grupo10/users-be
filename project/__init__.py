@@ -63,8 +63,7 @@ def register_blueprints(app):
     from project.blueprints.subscriptions_blueprint import (
         api as subscriptions_namespace,
     )
-    from project.blueprints.api_token_blueprint import (
-        api as api_token_namespace,
+    from project.blueprints.api_token_blueprint import api as api_token_namespace
     from project.blueprints.admin_media_blueprint import (
         api as admin_media_namespace,
     )
