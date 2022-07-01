@@ -27,13 +27,13 @@ playlist_response_model = api.inherit(
         "updatedAt": fields.DateTime(required=False),
         "plays": fields.Integer(required=False, default=0),
         "isDeleted": fields.Boolean(required=False, default=False),
+        "isActive": fields.Boolean(required=False, default=True),
     },
 )
 
 
 @api.route("")
 class Playlist(Resource):
-
     @check_token
     @api.expect(playlist_model)
     @api.response(200, "Success", playlist_response_model)
@@ -42,6 +42,17 @@ class Playlist(Resource):
         Create a new playlist
         """
         response, status_code = MediaRequester.post("playlists", request.json)
+        return response, status_code
+
+    @check_token
+    @api.response(200, "Success", playlist_response_model)
+    def get(self):
+        isActiveQuery = (
+            f"?isActive={request.args.get('isActive')}"
+            if request.args.get("isActive")
+            else ""
+        )
+        response, status_code = MediaRequester.get(f"playlists{isActiveQuery}")
         return response, status_code
 
 
