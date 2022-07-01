@@ -56,7 +56,7 @@ def user_schema(user):
         "uid": user.uid,
         "artist_id": user.artist_id,
         "roles": [role.id for role in user.roles],
-        "permissions": [permission.name for permission in user.permissions],
+        "permissions": [permission for permission in user.permissions],
         "active": user.active,
         "is_deleted": user.is_deleted,
         "created_at": date_to_str(user.created_at) if user.created_at else None,
@@ -68,14 +68,14 @@ def user_schema(user):
 
 @api.route("")
 class Users(Resource):
-    # @check_token
+    @check_token
     def get(self):
         return [user_schema(user) for user in UserController.load_all()], 200
 
 
 @api.route("/id/<id>", doc={"params": {"id": "User id"}})
 class User(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", user_response_model)
     @api.doc(
         responses={

@@ -45,3 +45,8 @@ class UserController(BaseController):
         cls.save(new_user)
         UserRoleController.create(user_id=new_user.id, role_id=role_id)
         return new_user
+
+    @classmethod
+    def load_by_artist_id(cls, artist_id: str) -> User:
+        user = User.query.filter_by(artist_id=artist_id).first()
+        return user

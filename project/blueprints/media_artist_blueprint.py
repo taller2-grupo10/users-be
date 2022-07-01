@@ -73,13 +73,13 @@ artist_delete_response_model = api.model(
 
 @api.route("")
 class Artists(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", artist_response_model)
     def get(self):
         response, status_code = MediaRequester.get(f"artists")
         return response, status_code
 
-    # @check_token
+    @check_token
     @api.expect(artist_post_model)
     @api.response(200, "Success", artist_response_model)
     def post(self):
@@ -89,13 +89,13 @@ class Artists(Resource):
 
 @api.route("/id/<id>", doc={"params": {"id": "Artist id"}})
 class ArtistById(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", artist_response_model)
     def get(self, id):
         response, status_code = MediaRequester.get(f"artists/{id}")
         return response, status_code
 
-    # @check_token
+    @check_token
     @api.expect(artist_put_model)
     @api.response(200, "Success", artist_put_response_model)
     def put(self, id):
@@ -137,7 +137,7 @@ class ArtistById(Resource):
             200,
         )
 
-    # @check_token
+    @check_token
     @api.response(200, "Success", artist_delete_response_model)
     def delete(self, id):
         albums, status_code = MediaRequester.get(f"albums/artistId/{id}")
@@ -164,7 +164,7 @@ class ArtistById(Resource):
 
 @api.route("/name/<name>", doc={"params": {"name": "Artist name"}})
 class ArtistByName(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", artist_response_model)
     def get(self, name):
         response, status_code = MediaRequester.get(f"artists/name/{name}")

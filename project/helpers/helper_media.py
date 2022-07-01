@@ -4,19 +4,27 @@ import os
 
 import requests
 
+from project.helpers.helper_payments import PaymentRequester
+
 MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
 from project.helpers.helper_api_token import API_TOKEN
 
 
 class MediaRequester:
     @staticmethod
-    def get(endpoint):
-        response = requests.get(
-            f"{MEDIA_URL}/{endpoint}",
-            headers={
+    def get(endpoint, user_id=None):
+        subscription_query = ""
+        if user_id is not None:
+            (
+                max_subscription_level,
+                status_code,
+            ) = PaymentRequester.get_subscription_level(user_id)
+            if status_code == 200:
+                subscription_query = "?subscriptionLevel=" + str(max_subscription_level)
+        response = requests.get(f"{MEDIA_URL}/{endpoint}{subscription_query}", 
+              headers={
                 "api_media": API_TOKEN,
-            },
-        )
+              },)
         return response.json(), response.status_code
 
     @staticmethod
