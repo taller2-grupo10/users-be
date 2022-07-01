@@ -52,6 +52,7 @@ class Playlist(Resource):
                 request.user,
                 collaborator_artist_id,
                 playlist_data.get("title"),
+                playlist_data.get("_id"),
             )
         return response, status_code
 
@@ -82,6 +83,7 @@ class PlaylistById(Resource):
                     request.user,
                     collaborator_artist_id,
                     playlist_new_data.get("title"),
+                    id,
                 )
         return response, status_code
 
@@ -103,7 +105,9 @@ class PlaylistByUser(Resource):
         return response, status_code
 
 
-def send_new_collaborator_notification(sender_user, collaborator, playlist_title):
+def send_new_collaborator_notification(
+    sender_user, collaborator, playlist_title, playlist_id
+):
     """
     Send a notification to the collaborator that they have been added to a playlist
     """
@@ -116,7 +120,12 @@ def send_new_collaborator_notification(sender_user, collaborator, playlist_title
         return True
 
     title = f"{sender_name} added you as collaborator to their Playlist!"
-    data = {"uid": sender_uid, "name": sender_name, "type": "playlist_add"}
+    data = {
+        "uid": sender_uid,
+        "name": sender_name,
+        "type": "playlist_add",
+        "playlist_id": playlist_id,
+    }
     message = (
         f"{sender_name} added you as collaborator to their Playlist: {playlist_title}"
     )
