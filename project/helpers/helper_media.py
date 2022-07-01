@@ -3,11 +3,11 @@ import json
 import os
 
 import requests
-from flask import jsonify
 
 from project.helpers.helper_payments import PaymentRequester
 
 MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
+from project.helpers.helper_api_token import API_TOKEN
 
 
 class MediaRequester:
@@ -21,14 +21,22 @@ class MediaRequester:
             ) = PaymentRequester.get_subscription_level(user_id)
             if status_code == 200:
                 subscription_query = "?subscriptionLevel=" + str(max_subscription_level)
-        response = requests.get(f"{MEDIA_URL}/{endpoint}{subscription_query}")
+        response = requests.get(
+            f"{MEDIA_URL}/{endpoint}{subscription_query}",
+            headers={
+                "api_media": API_TOKEN,
+            },
+        )
         return response.json(), response.status_code
 
     @staticmethod
     def post(endpoint, data):
         response = requests.post(
             f"{MEDIA_URL}/{endpoint}",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "api_media": API_TOKEN,
+            },
             json=data,
         )
         return response.json(), response.status_code
@@ -47,6 +55,7 @@ class MediaRequester:
                 ),
                 "data": files["data"],
             },
+            headers={"api_media": API_TOKEN},
         )
         return response.json(), response.status_code
 
@@ -54,7 +63,10 @@ class MediaRequester:
     def put(endpoint, data):
         response = requests.put(
             f"{MEDIA_URL}/{endpoint}",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "api_media": API_TOKEN,
+            },
             json=data,
         )
         return response.json(), response.status_code
@@ -63,7 +75,10 @@ class MediaRequester:
     def delete(endpoint):
         response = response = requests.put(
             f"{MEDIA_URL}/{endpoint}",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "api_media": API_TOKEN,
+            },
             json={"isDeleted": True},
         )
         return response.json(), response.status_code
