@@ -38,16 +38,16 @@ playlist_response_model = api.inherit(
 class Playlist(Resource):
     @check_token
     @api.expect(playlist_model)
-    @api.response(200, "Success", playlist_response_model)
+    @api.response(201, "Success", playlist_response_model)
     def post(self):
         """
         Create a new playlist
         """
         response, status_code = MediaRequester.post("playlists", request.json)
-        if status_code != 200:
+        if status_code != 201:
             return response, status_code
 
-        playlist_data = request.json
+        playlist_data = response
         for collaborator_artist_id in playlist_data.get("collaborators") or []:
             send_new_collaborator_notification(
                 request.user,
@@ -78,12 +78,13 @@ class PlaylistById(Resource):
     @api.expect(playlist_model)
     @api.response(200, "Success", playlist_response_model)
     def put(self, id):
+        playlist_old_data, status_code = MediaRequester.get(f"playlists/{id}")
+
         response, status_code = MediaRequester.put(f"playlists/{id}", request.json)
         if status_code != 200:
             return response, status_code
 
-        playlist_old_data, status_code = MediaRequester.get(f"playlists/{id}")
-        playlist_new_data = request.json
+        playlist_new_data = response
         for collaborator_artist_id in playlist_new_data.get("collaborators") or []:
             if collaborator_artist_id not in playlist_old_data.get("collaborators"):
                 send_new_collaborator_notification(
