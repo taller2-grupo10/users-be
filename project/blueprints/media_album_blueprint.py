@@ -184,3 +184,17 @@ def _delete_song(song_id):
 
 def _put_song(song_id, request):
     return MediaRequester.put(f"songs/{song_id}", data=request)
+
+
+@api.route(
+    "/subscription/<subscriptionLevel>",
+    doc={"params": {"subscriptionLevel": "Subscription level"}},
+)
+class AlbumsBySubscriptionLevel(Resource):
+    @check_token
+    @api.response(200, "Success", album_response_model)
+    def get(self, subscriptionLevel):
+        response, status_code = MediaRequester.get(
+            f"songs/subscription/{subscriptionLevel}"
+        )
+        return response, status_code
