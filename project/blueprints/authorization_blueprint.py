@@ -97,12 +97,9 @@ class Login(Resource):
     @api.response(200, "Success", login_response_model)
     @api.response(400, "{message: No user found}")
     def post(self):
-        uid = request.json.get("uid")
         notification_token = request.json.get("notification_token")
-        user = UserController.load_by_uid(uid)
-        if not user:
-            return {"message": "No user found"}, 400
-        if notification_token and user.notification_token != notification_token:
+        user = request.user
+        if user.notification_token != notification_token:
             UserController._update(user, notification_token=notification_token)
         return user_schema(user=user), 200
 
@@ -119,6 +116,16 @@ class Signup(Resource):
     )
     def post(self):
         return sign_up(ID_USER)
+
+
+@api.route("/login/admin")
+class AdminLogin(Resource):
+    @check_token
+    @check_permissions(["admin_login"])
+    @api.response(200, "Success", login_response_model)
+    def post(self):
+        # All the logic is in check_token and check_permissions
+        return user_schema(user=request.user), 200
 
 
 @api.route("/signup/admin")
