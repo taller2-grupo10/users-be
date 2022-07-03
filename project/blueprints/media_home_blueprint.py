@@ -1,17 +1,15 @@
+import random
 from urllib import response
-from flask import Blueprint, request
-from project.helpers.helper_auth import check_token
-from project.helpers.helper_media import MediaRequester
-from flask import jsonify
+
+from flask import Blueprint, jsonify, request
 from flask_restx import Namespace, Resource, fields
-from project.blueprints.media_song_blueprint import song_response_model
-from project.blueprints.media_playlist_blueprint import playlist_response_model
 from project.blueprints.media_album_blueprint import album_response_model
+from project.blueprints.media_playlist_blueprint import playlist_response_model
+from project.blueprints.media_song_blueprint import song_response_model
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_notification import send_notification
-import random
 
 api = Namespace(
     name="Media Home", path="media/home", description="Home related endpoints"
