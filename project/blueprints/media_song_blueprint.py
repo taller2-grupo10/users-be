@@ -183,6 +183,6 @@ class SongsBySubscriptionLevel(Resource):
     @api.response(200, "Success", song_response_model)
     def get(self, subscriptionLevel):
         response, status_code = MediaRequester.get(
-            f"songs/subscription/{subscriptionLevel}", user_id=request.user.id
+            f"songs/subscription/{subscriptionLevel}"
         )
         return response, status_code
