@@ -80,15 +80,15 @@ class User(Resource):
     @api.doc(
         responses={
             200: "{message: User signed up}",
-            400: "{message: user_not_found}",
+            404: "{message: user_not_found}",
         }
     )
     def get(self, id):
         user = UserController.load_by_id(id)
         if not user:
             return (
-                {"message": "user_not_found"},
-                400,
+                {"code": "NO_USER_FOUND"},
+                404,
             )
         return user_schema(user), 200
 
@@ -96,6 +96,12 @@ class User(Resource):
     @api.response(200, "Success", user_put_response_model)
     def put(self, id):
         user = UserController.load_updated(id, **request.json)
+        if not user:
+            return (
+                {"code": "NO_USER_FOUND"},
+                404,
+            )
+
         return (
             {
                 "message": "user_updated",

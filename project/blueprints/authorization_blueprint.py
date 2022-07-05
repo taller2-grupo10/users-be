@@ -1,7 +1,8 @@
-from flask import Blueprint, request
+from flask import request, jsonify
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token, is_valid_token, check_permissions
+from project.helpers.helper_logger import Logger
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
 from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
@@ -67,15 +68,27 @@ def sign_up(role_id):
     location = request.json.get("location")
     genres = request.json.get("genres")
     if not uid or not name or not location or not genres:
-        return {"message": "No uid/name/location/genres provided"}, 400
+        Logger.info(
+            f"Signup: Missing required fields: uid->{uid}, name->{name}, location->{location}, genres->{genres}"
+        )
+        return {"code": "MISSING_SIGN_UP_PARAMETERS"}, 400
     try:
         user = UserController.load_by_uid(uid)
         if user:
-            return {"message": "User already exists"}, 400
+            Logger.info(f"Signup: User already exists, uid: {uid}")
+            return {"code": "EXISTING_USER"}, 400
 
         data = {"uid": uid, "name": name, "location": location, "genres": genres}
+
         response_media, status_code = MediaRequester.post("artists", data)
+        if status_code != 201:
+            Logger.error(f"Signup: Error while creating artist, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
+
         response_payment, status_code = PaymentRequester.create_wallet()
+        if status_code != 201:
+            Logger.error(f"Signup: Error creating wallet, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
 
         new_user = UserController.create(
             uid=uid,
@@ -84,10 +97,12 @@ def sign_up(role_id):
             notification_token=notification_token,
             wallet_id=response_payment["id"],
         )
+        if not new_user:
+            Logger.error(f"Signup: Failed to create user, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
     except ValueError as e:
-        print("Error: {}".format(e))
-        return {"message": "Error while creating User"}, 400
-    return response_media, status_code
+        return {"code": "FAILED_TO_CREATE_USER"}, 400
+    return user_schema(new_user), 201
 
 
 @api.route("/login")
@@ -137,10 +152,13 @@ class AdminSignup(Resource):
         return sign_up(ID_ADMIN)
 
 
-@api.route("/signup/superadmin")
-class AdminSignup(Resource):
+@api.route("/logged_in", methods=["GET"])
+class IsLoggedIn(Resource):
     @check_token
-    @check_permissions(["superadmin_creation"])
-    @api.expect(signup_model)
-    def post(self):
-        return sign_up(ID_SUPERADMIN)
+    def get(self):
+        """
+        Endpoint to check if user is still logged in.
+        Used to render pages in front-end.
+        If user is not logged in, "Invalid token provided" answer is returned by @check_token.
+        """
+        return jsonify({"code": "LOGGED_IN"}), 200

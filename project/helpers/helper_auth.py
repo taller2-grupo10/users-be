@@ -3,6 +3,7 @@ from firebase_admin import auth
 from flask import request
 
 from project.controllers.user_controller import UserController
+from project.helpers.helper_logger import Logger
 
 
 def is_valid_token(f):
@@ -16,11 +17,11 @@ def is_valid_token(f):
         if token and "Bearer" in token:
             token = token.split()[1]
         else:
-            return {"message": "No token provided"}, 400
+            return {"code": "NO_TOKEN_PROVIDED"}, 401
         try:
-            firebase_user = auth.verify_id_token(token)
+            auth.verify_id_token(token)
         except:
-            return {"message": "Invalid token provided."}, 400
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
         return f(*args, **kwargs)
 
     return token
@@ -37,15 +38,19 @@ def check_token(f):
         if token and "Bearer" in token:
             token = token.split()[1]
         else:
-            return {"message": "No token provided"}, 400
+            return {"code": "NO_TOKEN_PROVIDED"}, 401
         try:
             firebase_user = auth.verify_id_token(token)
             local_user = UserController.load_by_uid(firebase_user["uid"])
             if not local_user:
-                return {"message": "No user found"}, 400
+                Logger.error(
+                    f"User {firebase_user['uid']} does not exist on DB but has a valid token"
+                )
+                return {"code": "NO_USER_FOUND"}, 404
             request.user = local_user
         except:
-            return {"message": "Invalid token provided."}, 400
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
+        Logger.info(f"User {request.user.uid} has been authenticated")
         return f(*args, **kwargs)
 
     return token
@@ -60,7 +65,7 @@ def check_permissions(permissions_needed):
 
             for permission in permissions_needed:
                 if permission not in permissions:
-                    return {"message": "User does not have permission"}, 400
+                    return {"code": "INVALID_PERMISSION"}, 401
 
             return f(*args, **kwargs)
 

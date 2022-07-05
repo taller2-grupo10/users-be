@@ -1,5 +1,3 @@
-from project.controllers.user_controller import UserController
-from project.blueprints.media_artist_blueprint import ArtistById
 from exponent_server_sdk import (
     DeviceNotRegisteredError,
     PushClient,
@@ -7,6 +5,7 @@ from exponent_server_sdk import (
     PushServerError,
     PushTicketError,
 )
+from project.helpers.helper_logger import Logger
 
 
 def send_notification(user, title, message, data):
@@ -19,13 +18,11 @@ def send_notification(user, title, message, data):
     try:
         response = PushClient().publish(
             PushMessage(
-                to=user.notification_token,
-                title=title,
-                body=message,
-                data=data
+                to=user.notification_token, title=title, body=message, data=data
             )
         )
     except PushServerError as err:
+        Logger.warn(f"Failed to send notification to user {user.uid}")
         return False
 
     try:
@@ -33,11 +30,12 @@ def send_notification(user, title, message, data):
         # This call raises errors so we can handle them with normal exception
         # flows.
         if response is None:
+            Logger.warn(
+                f"Failed to obtain response from Push Notification Service {user.uid}"
+            )
             return False
         response.validate_response()
         return True
     except (DeviceNotRegisteredError, PushTicketError) as err:
-        # Mark the push token as inactive
-        # TODO: logger
-        pass
+        Logger.warn(f"Failed to send notification to user {user.uid}")
         return False
