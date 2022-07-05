@@ -11,11 +11,29 @@ api = Namespace(
     name="Payments", path="payments", description="Payments related endpoints"
 )
 
+transaction_model = api.model(
+    "Transaction",
+    {
+        "transactionHash": fields.String(required=True, description="Transaction hash"),
+        "blockNumber": fields.String(required=True, description="Block number"),
+        "blockHash": fields.String(required=True, description="Block hash"),
+        "from": fields.String(required=True, description="Transaction sender"),
+        "to": fields.String(required=True, description="Transaction receiver"),
+        "amount": fields.String(required=True, description="Transaction amount"),
+        "createdAt": fields.DateTime(
+            required=True, description="Transaction created at"
+        ),
+        "updatedAt": fields.DateTime(
+            required=True, description="Transaction updated at"
+        ),
+    },
+)
+
 
 @api.route("/deposit/<subscription_id>")
 class PaymentDeposit(Resource):
-    # @api.doc(security="Bearer")
     @check_token
+    @api.doc(responses={200: "{code: SUCCESS}"})
     def post(self, subscription_id):
         wallet_id = request.user.wallet_id
         if not wallet_id:
@@ -49,6 +67,7 @@ class PaymentDeposit(Resource):
 @api.route("/balance")
 class PaymentBalance(Resource):
     @check_token
+    @api.response(200, "Success", fields.Float)
     def get(self):
         wallet_id = request.user.wallet_id
         if not wallet_id:
@@ -60,6 +79,7 @@ class PaymentBalance(Resource):
 @api.route("/check")
 class PaymentChecker(Resource):
     @check_token
+    @api.response(200, "Success", fields.Integer)
     def get(self):
         user_id = request.user.id
         response, status_code = PaymentRequester.get_subscription_level(user_id)
@@ -69,6 +89,7 @@ class PaymentChecker(Resource):
 @api.route("/transactions")
 class PaymentTransactions(Resource):
     @check_token
+    @api.response(200, "Success (list)", transaction_model)
     def get(self):
         response, status_code = PaymentRequester.get_all_transactions()
         return response, status_code

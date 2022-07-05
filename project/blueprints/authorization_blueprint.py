@@ -110,7 +110,6 @@ class Login(Resource):
     @check_token
     @api.expect(login_model)
     @api.response(200, "Success", login_response_model)
-    @api.response(400, "{message: No user found}")
     def post(self):
         notification_token = request.json.get("notification_token")
         user = request.user
@@ -123,10 +122,10 @@ class Login(Resource):
 class Signup(Resource):
     @is_valid_token
     @api.expect(signup_model)
+    @api.response(200, "Success", login_response_model)
     @api.doc(
         responses={
-            200: "{message: User signed up}",
-            400: "{message: User already exists || No uid/name provided || Error while creating User}",
+            400: "{code: MISSING_SIGN_UP_PARAMETERS || EXISTING_USER || FAILED_TO_CREATE_USER}",
         }
     )
     def post(self):
@@ -148,6 +147,12 @@ class AdminSignup(Resource):
     @check_token
     @check_permissions(["admin_creation"])
     @api.expect(signup_model)
+    @api.response(200, "Success", login_response_model)
+    @api.doc(
+        responses={
+            400: "{code: MISSING_SIGN_UP_PARAMETERS || EXISTING_USER || FAILED_TO_CREATE_USER}",
+        }
+    )
     def post(self):
         return sign_up(ID_ADMIN)
 
@@ -155,6 +160,7 @@ class AdminSignup(Resource):
 @api.route("/logged_in", methods=["GET"])
 class IsLoggedIn(Resource):
     @check_token
+    @api.response(200, "Success")
     def get(self):
         """
         Endpoint to check if user is still logged in.

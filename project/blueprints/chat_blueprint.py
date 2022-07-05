@@ -7,6 +7,7 @@ from project.blueprints.media_artist_blueprint import ArtistById
 from project.config import Config
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
+from project.helpers.helper_logger import Logger
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_notification import send_notification
 
@@ -58,6 +59,7 @@ def upload_message(sender_uid, recv_uid, message):
         )
         return True
     except:
+        Logger.error(f"Error uploading message to firebase. Chat: {joined_uid}")
         return False
 
 
@@ -82,14 +84,10 @@ class ChatHandler(Resource):
         upload_ok = upload_message(sender_uid, recv_uid, message)
         notification_ok = send_new_message_notification(request.user, recv_uid, message)
         if not upload_ok:
-            return {"status": "error", "message": "Error sending message"}, 400
-        elif not notification_ok:
-            return {"status": "error", "message": "Error sending notification"}, 400
-        else:
-            return {
-                "status": "success",
-                "message": "Message and notification sent",
-            }, 200
+            return {"code": "FAILED_TO_UPLOAD_MESSAGE"}, 500
+        if not notification_ok:
+            return {"code": "FAILED_TO_SEND_NOTIFICATION"}, 500
+        return {"code": "SUCCESS"}, 200
 
 
 @api.route("/debug")
