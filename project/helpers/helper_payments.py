@@ -68,3 +68,13 @@ class PaymentRequester:
             ):
                 max_subscription_level = payment.subscription_id
         return max_subscription_level, 200
+
+    @staticmethod
+    def get_all_transactions():
+        response = requests.get(
+            f"{PAYMENT_URL}/transactions",
+            headers={"api_payments": API_TOKEN},
+        )
+        if response.status_code >= 400:
+            Logger.error(f"Error while getting transactions")
+        return response.json(), response.status_code

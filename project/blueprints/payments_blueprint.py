@@ -64,3 +64,11 @@ class PaymentChecker(Resource):
         user_id = request.user.id
         response, status_code = PaymentRequester.get_subscription_level(user_id)
         return response, status_code
+
+
+@api.route("/transactions")
+class PaymentTransactions(Resource):
+    @check_token
+    def get(self):
+        response, status_code = PaymentRequester.get_all_transactions()
+        return response, status_code
