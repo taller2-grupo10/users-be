@@ -43,8 +43,10 @@ class Home(Resource):
         They are based on the user's preferences (location and genres).
         """
         data, status_code = MediaRequester.get(f"home/{id}", user_id=request.user.id)
-        data["songs"] = random.sample(data["songs"], 5)
-        data["playlists"] = random.sample(data["playlists"], 5)
-        data["albums"] = random.sample(data["albums"], 5)
+        data["songs"] = random.sample(data["songs"], min(5, len(data["songs"])))
+        data["playlists"] = random.sample(
+            data["playlists"], min(5, len(data["playlists"]))
+        )
+        data["albums"] = random.sample(data["albums"], min(5, len(data["albums"])))
 
         return data, status_code
