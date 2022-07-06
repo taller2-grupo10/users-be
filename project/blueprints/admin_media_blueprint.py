@@ -19,7 +19,7 @@ class AdminSong(Resource):
     @check_permissions(["admin_list"])
     @api.response(200, "Success", song_response_model)
     def get(self):
-        response, status_code = MediaRequester.get("songs/noFilter")
+        response, status_code = MediaRequester.get("songs/noFilter/all")
         return response, status_code
 
 
@@ -64,7 +64,7 @@ class AdminPlaylist(Resource):
     @check_permissions(["admin_list"])
     @api.response(200, "Success", playlist_response_model)
     def get(self):
-        response, status_code = MediaRequester.get("playlists/noFilter")
+        response, status_code = MediaRequester.get("playlists/noFilter/all")
         return response, status_code
 
 
@@ -99,7 +99,7 @@ class AdminAlbum(Resource):
     @check_permissions(["admin_list"])
     @api.response(200, "Success", album_response_model)
     def get(self):
-        response, status_code = MediaRequester.get("albums/noFilter")
+        response, status_code = MediaRequester.get("albums/noFilter/all")
         return response, status_code
 
 
