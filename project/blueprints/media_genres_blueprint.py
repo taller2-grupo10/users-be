@@ -43,7 +43,6 @@ music_genres_response_model = fields.List(
 
 @api.route("")
 class MusicGenres(Resource):
-    @check_token
     @api.response(200, "Success", music_genres_response_model)
     def get(self):
         response, status_code = MediaRequester.get(f"genres")
