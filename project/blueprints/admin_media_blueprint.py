@@ -23,6 +23,16 @@ class AdminSong(Resource):
         return response, status_code
 
 
+@api.route("/songs/album/<albumId>", doc={"params": {"albumId": "Album id"}})
+class AdminSongsByAlbumId(Resource):
+    @check_token
+    @check_permissions(["admin_list"])
+    @api.response(200, "Success", song_response_model)
+    def get(self, albumId):
+        response, status_code = MediaRequester.get(f"songs/albumId/noFilter/{albumId}")
+        return response, status_code
+
+
 @api.route("/songs/enable/<id>")
 class AdminSongEnable(Resource):
     @check_token

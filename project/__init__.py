@@ -74,7 +74,7 @@ def register_blueprints(app):
         blueprint,
         title="Spotifiuby",
         version="0.1",
-        description="Documentation of Spotifiuby",
+        description="Documentation of Spotifiuby Users BE",
         doc="/doc",
     )
 

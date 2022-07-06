@@ -167,4 +167,4 @@ class IsLoggedIn(Resource):
         Used to render pages in front-end.
         If user is not logged in, "Invalid token provided" answer is returned by @check_token.
         """
-        return jsonify({"code": "LOGGED_IN"}), 200
+        return {"code": "LOGGED_IN"}, 200
