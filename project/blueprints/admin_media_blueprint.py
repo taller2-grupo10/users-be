@@ -109,6 +109,13 @@ class AdminAlbumEnable(Resource):
     @check_permissions(["admin_modify"])
     @api.response(200, "Success", album_response_model)
     def post(self, id):
+        songs, status_code = MediaRequester.get(f"songs/albumId/noFilter/{id}")
+        for song in songs:
+            song_id = song["_id"]
+            response, status_code = MediaRequester.put(
+                f"songs/{song_id}", data={"isActive": True}
+            )
+
         response, status_code = MediaRequester.put(
             f"albums/{id}", data={"isActive": True}
         )
@@ -121,6 +128,13 @@ class AdminAlbumDisable(Resource):
     @check_permissions(["admin_modify"])
     @api.response(200, "Success", album_response_model)
     def post(self, id):
+        songs, status_code = MediaRequester.get(f"songs/albumId/noFilter/{id}")
+        for song in songs:
+            song_id = song["_id"]
+            response, status_code = MediaRequester.put(
+                f"songs/{song_id}", data={"isActive": False}
+            )
+
         response, status_code = MediaRequester.put(
             f"albums/{id}", data={"isActive": False}
         )
