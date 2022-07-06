@@ -173,11 +173,11 @@ class IsLoggedIn(Resource):
 
 @api.route("/passwordReset/<email>", methods=["POST"])
 class PasswordReset(Resource):
-    # @api.response(200, "Success")
+    @api.response(201, "Success")
     def post(self, email):
         """
-        Endpoint to send password reset email.
+        Endpoint to save password reset request.
         """
         password_reset = PasswordResetRequest(email)
         password_reset.save()
-        return {"code": "PASSWORD_RESET_EMAIL_SENT"}, 200
+        return {"code": "PASSWORD_REQUEST_SAVED"}, 201
