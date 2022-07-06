@@ -22,19 +22,7 @@ utc = pytz.UTC
 
 api = Namespace(name="Metrics", path="metrics", description="Metrics related endpoints")
 
-"""
-example:
-{
-    "new_users": {
-        "password": 4
-    },
-    "recent_logins": {
-        "password": 7
-    },
-    "password_resets": 4,
-    "blocked": 0
-}
-"""
+
 password_model = api.model(
     "password", {"password": fields.Integer(required=True, description="Password")}
 )
