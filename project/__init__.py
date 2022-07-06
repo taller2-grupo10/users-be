@@ -67,6 +67,7 @@ def register_blueprints(app):
     from project.blueprints.admin_media_blueprint import (
         api as admin_media_namespace,
     )
+    from project.blueprints.metrics_blueprint import api as metrics_namespace
     from project.blueprints.media_home_blueprint import (
         api as media_home_namespace,
     )
@@ -94,6 +95,7 @@ def register_blueprints(app):
     api_extension.add_namespace(subscriptions_namespace)
     api_extension.add_namespace(api_token_namespace)
     api_extension.add_namespace(admin_media_namespace)
+    api_extension.add_namespace(metrics_namespace)
     api_extension.add_namespace(media_home_namespace)
 
     app.register_blueprint(blueprint)

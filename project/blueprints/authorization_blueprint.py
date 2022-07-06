@@ -1,11 +1,12 @@
-from flask import Blueprint, request
+from flask import request
+from flask_restx import Namespace, Resource, fields
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
-from project.helpers.helper_auth import check_token, is_valid_token, check_permissions
+from project.helpers.helper_auth import check_permissions, check_token, is_valid_token
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
-from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
-from flask_restx import Namespace, Resource, fields
+from project.models.password_reset_request import PasswordResetRequest
+from project.models.user_role import ID_ADMIN, ID_USER
 
 api = Namespace(
     name="Authorization", path="/auth", description="Authorization related endpoints"
@@ -137,10 +138,13 @@ class AdminSignup(Resource):
         return sign_up(ID_ADMIN)
 
 
-@api.route("/signup/superadmin")
-class AdminSignup(Resource):
-    @check_token
-    @check_permissions(["superadmin_creation"])
-    @api.expect(signup_model)
-    def post(self):
-        return sign_up(ID_SUPERADMIN)
+@api.route("/passwordReset/<email>", methods=["POST"])
+class PasswordReset(Resource):
+    # @api.response(200, "Success")
+    def post(self, email):
+        """
+        Endpoint to send password reset email.
+        """
+        password_reset = PasswordResetRequest(email)
+        password_reset.save()
+        return {"code": "PASSWORD_RESET_EMAIL_SENT"}, 200
