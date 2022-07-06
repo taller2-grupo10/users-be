@@ -1,12 +1,13 @@
-from flask import request, jsonify
+from flask import jsonify, request
+from flask_restx import Namespace, Resource, fields
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
-from project.helpers.helper_auth import check_token, is_valid_token, check_permissions
+from project.helpers.helper_auth import check_permissions, check_token, is_valid_token
 from project.helpers.helper_logger import Logger
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
-from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
-from flask_restx import Namespace, Resource, fields
+from project.models.password_reset_request import PasswordResetRequest
+from project.models.user_role import ID_ADMIN, ID_USER
 
 api = Namespace(
     name="Authorization", path="/auth", description="Authorization related endpoints"
@@ -157,7 +158,7 @@ class AdminSignup(Resource):
         return sign_up(ID_ADMIN)
 
 
-@api.route("/logged_in", methods=["GET"])
+@api.route("/loggedIn", methods=["GET"])
 class IsLoggedIn(Resource):
     @check_token
     @api.response(200, "Success")
@@ -168,3 +169,15 @@ class IsLoggedIn(Resource):
         If user is not logged in, "Invalid token provided" answer is returned by @check_token.
         """
         return {"code": "LOGGED_IN"}, 200
+
+
+@api.route("/passwordReset/<email>", methods=["POST"])
+class PasswordReset(Resource):
+    @api.response(201, "Success")
+    def post(self, email):
+        """
+        Endpoint to save password reset request.
+        """
+        password_reset = PasswordResetRequest(email)
+        password_reset.save()
+        return {"code": "PASSWORD_REQUEST_SAVED"}, 201

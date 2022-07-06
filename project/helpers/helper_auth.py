@@ -13,11 +13,13 @@ def is_valid_token(f):
 
     @wraps(f)
     def token(*args, **kwargs):
-        token = request.headers.get("authorization")
-        if token and "Bearer" in token:
-            token = token.split()[1]
-        else:
-            return {"code": "NO_TOKEN_PROVIDED"}, 401
+        header = request.headers.get("authorization")
+        if not header or not "Bearer" in header:
+             return {"code": "NO_TOKEN_PROVIDED"}, 401
+        header = header.split()
+        if len(header) != 2:
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
+        token = header[1]
         try:
             auth.verify_id_token(token)
         except:
@@ -34,11 +36,13 @@ def check_token(f):
 
     @wraps(f)
     def token(*args, **kwargs):
-        token = request.headers.get("authorization")
-        if token and "Bearer" in token:
-            token = token.split()[1]
-        else:
-            return {"code": "NO_TOKEN_PROVIDED"}, 401
+        header = request.headers.get("authorization")
+        if not header or not "Bearer" in header:
+             return {"code": "NO_TOKEN_PROVIDED"}, 401
+        header = header.split()
+        if len(header) != 2:
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
+        token = header[1]
         try:
             firebase_user = auth.verify_id_token(token)
             local_user = UserController.load_by_uid(firebase_user["uid"])
