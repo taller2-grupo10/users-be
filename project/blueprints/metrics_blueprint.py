@@ -8,14 +8,12 @@ CA 4: Métricas de login de usuarios utilizando identidad federada
 CA 5: Métricas de usuarios bloqueados
 CA 6: Métricas de recupero de contraseña
 """
-
-
 from datetime import datetime
 
 import pytz
 from firebase_admin import auth
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from project.helpers.helper_auth import check_token
 from project.models.password_reset_request import PasswordResetRequest
 from project.models.user import User
@@ -23,6 +21,24 @@ from project.models.user import User
 utc = pytz.UTC
 
 api = Namespace(name="Metrics", path="metrics", description="Metrics related endpoints")
+
+
+password_model = api.model(
+    "password", {"password": fields.Integer(required=True, description="Password")}
+)
+metrics_model = api.model(
+    "Metrics",
+    {
+        "new_users": fields.Nested(
+            password_model, required=True, description="New users"
+        ),
+        "recent_logins": fields.Nested(
+            password_model, required=True, description="Recent logins"
+        ),
+        "password_resets": fields.Integer(required=True, description="Password resets"),
+        "blocked": fields.Integer(required=True, description="Blocked users"),
+    },
+)
 
 
 def is_in_datetime_range(date_time, start):
@@ -78,11 +94,19 @@ def count_password_reset_requests(from_date):
 @api.route("/data")
 class Data(Resource):
     @check_token
+    @api.response(200, "Success", metrics_model)
     def get(self):
-        from_date = datetime.strptime(request.args.get("from_date"), "%d/%m/%Y")
+        try:
+            from_date = datetime.strptime(request.args.get("from_date"), "%d/%m/%Y")
+        except ValueError:
+            from_date = datetime(year=1970, month=1, day=1)
 
         new_users = {}
+        new_users["password"] = 0
+        new_users["google"] = 0
         recent_logins = {}
+        recent_logins["password"] = 0
+        recent_logins["google"] = 0
         password_resets = count_password_reset_requests(from_date)
         blocked = count_blocked_users()
 
@@ -97,4 +121,5 @@ class Data(Resource):
             "recent_logins": recent_logins,
             "password_resets": password_resets,
             "blocked": blocked,
+            "from_date": from_date.strftime("%d/%m/%Y"),
         }, 200

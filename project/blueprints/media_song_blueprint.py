@@ -86,17 +86,17 @@ class Songs(Resource):
     @api.response(200, "Success", song_response_model)
     @api.doc(
         responses={
-            400: "{message: Error while creating Song. Missing file. || Error while creating Song. Missing data.}",
+            422: "{code: UPLOAD_MISSING_FILE || UPLOAD_MISSING_FILE}",
         }
     )
     def post(self):
         if "files" not in request.form:
             return (
-                {"message": "Error while creating Song. Missing file."},
+                {"code": "UPLOAD_MISSING_FILE"},
                 422,
             )
         if "data" not in request.form:
-            return {"message": "Error while creating Song. Missing data."}, 422
+            return {"code": "UPLOAD_MISSING_DATA"}, 422
 
         response, status_code = MediaRequester.post_file("songs", files=request.form)
         return response, status_code

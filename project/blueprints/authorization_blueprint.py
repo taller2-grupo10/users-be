@@ -1,8 +1,9 @@
-from flask import request
+from flask import jsonify, request
 from flask_restx import Namespace, Resource, fields
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_permissions, check_token, is_valid_token
+from project.helpers.helper_logger import Logger
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
 from project.models.password_reset_request import PasswordResetRequest
@@ -68,15 +69,27 @@ def sign_up(role_id):
     location = request.json.get("location")
     genres = request.json.get("genres")
     if not uid or not name or not location or not genres:
-        return {"message": "No uid/name/location/genres provided"}, 400
+        Logger.info(
+            f"Signup: Missing required fields: uid->{uid}, name->{name}, location->{location}, genres->{genres}"
+        )
+        return {"code": "MISSING_SIGN_UP_PARAMETERS"}, 400
     try:
         user = UserController.load_by_uid(uid)
         if user:
-            return {"message": "User already exists"}, 400
+            Logger.info(f"Signup: User already exists, uid: {uid}")
+            return {"code": "EXISTING_USER"}, 400
 
         data = {"uid": uid, "name": name, "location": location, "genres": genres}
+
         response_media, status_code = MediaRequester.post("artists", data)
+        if status_code != 201:
+            Logger.error(f"Signup: Error while creating artist, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
+
         response_payment, status_code = PaymentRequester.create_wallet()
+        if status_code != 201:
+            Logger.error(f"Signup: Error creating wallet, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
 
         new_user = UserController.create(
             uid=uid,
@@ -85,10 +98,12 @@ def sign_up(role_id):
             notification_token=notification_token,
             wallet_id=response_payment["id"],
         )
+        if not new_user:
+            Logger.error(f"Signup: Failed to create user, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
     except ValueError as e:
-        print("Error: {}".format(e))
-        return {"message": "Error while creating User"}, 400
-    return response_media, status_code
+        return {"code": "FAILED_TO_CREATE_USER"}, 400
+    return user_schema(new_user), 201
 
 
 @api.route("/login")
@@ -96,7 +111,6 @@ class Login(Resource):
     @check_token
     @api.expect(login_model)
     @api.response(200, "Success", login_response_model)
-    @api.response(400, "{message: No user found}")
     def post(self):
         notification_token = request.json.get("notification_token")
         user = request.user
@@ -109,10 +123,10 @@ class Login(Resource):
 class Signup(Resource):
     @is_valid_token
     @api.expect(signup_model)
+    @api.response(200, "Success", login_response_model)
     @api.doc(
         responses={
-            200: "{message: User signed up}",
-            400: "{message: User already exists || No uid/name provided || Error while creating User}",
+            400: "{code: MISSING_SIGN_UP_PARAMETERS || EXISTING_USER || FAILED_TO_CREATE_USER}",
         }
     )
     def post(self):
@@ -134,17 +148,36 @@ class AdminSignup(Resource):
     @check_token
     @check_permissions(["admin_creation"])
     @api.expect(signup_model)
+    @api.response(200, "Success", login_response_model)
+    @api.doc(
+        responses={
+            400: "{code: MISSING_SIGN_UP_PARAMETERS || EXISTING_USER || FAILED_TO_CREATE_USER}",
+        }
+    )
     def post(self):
         return sign_up(ID_ADMIN)
 
 
+@api.route("/loggedIn", methods=["GET"])
+class IsLoggedIn(Resource):
+    @check_token
+    @api.response(200, "Success")
+    def get(self):
+        """
+        Endpoint to check if user is still logged in.
+        Used to render pages in front-end.
+        If user is not logged in, "Invalid token provided" answer is returned by @check_token.
+        """
+        return {"code": "LOGGED_IN"}, 200
+
+
 @api.route("/passwordReset/<email>", methods=["POST"])
 class PasswordReset(Resource):
-    # @api.response(200, "Success")
+    @api.response(201, "Success")
     def post(self, email):
         """
-        Endpoint to send password reset email.
+        Endpoint to save password reset request.
         """
         password_reset = PasswordResetRequest(email)
         password_reset.save()
-        return {"code": "PASSWORD_RESET_EMAIL_SENT"}, 200
+        return {"code": "PASSWORD_REQUEST_SAVED"}, 201

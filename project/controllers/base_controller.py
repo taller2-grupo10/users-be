@@ -52,14 +52,6 @@ class BaseController:
         return cls.null_object_class(id=id) if cls.null_object_class else None
 
     @classmethod
-    def exists(cls, id: int) -> bool:
-        """
-        Receives an id of a Model object.
-        Returns true if exists else false.
-        """
-        return bool(cls.load_by_id(id))
-
-    @classmethod
     def _update(cls, obj: BaseModel, **kwargs) -> None:
         """
         Receives a Base model object and args.
@@ -89,7 +81,7 @@ class BaseController:
         """
         obj = cls.load_by_id(id)
         if not obj:
-            return None  # TODO: raise exception
+            return None
         cls._update(obj, **kwargs)
         db.session.commit()
 

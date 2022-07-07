@@ -8,7 +8,7 @@ api = Namespace(
     description="Subscriptions related endpoints",
 )
 
-subscription__model = api.model(
+subscription_model = api.model(
     "Subscription",
     {
         "id": fields.Integer(required=True, description="Subscription identifier"),
@@ -35,7 +35,7 @@ def subscription_schema(subscription):
 @api.route("")
 class Subscriptions(Resource):
     @check_token
-    @api.response(200, "Success", subscription__model)
+    @api.response(200, "Success", subscription_model)
     def get(self):
         subscriptions = Subscription.query.all()
         return [subscription_schema(subscription) for subscription in subscriptions]

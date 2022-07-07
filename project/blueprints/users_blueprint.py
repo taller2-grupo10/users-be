@@ -36,7 +36,7 @@ user_response_model = api.inherit("User Response", user_model)
 user_put_response_model = api.model(
     "User Put Response",
     {
-        "message": fields.String(
+        "code": fields.String(
             required=True,
             description="User updated",
             example="user_updated",
@@ -77,28 +77,30 @@ class Users(Resource):
 class User(Resource):
     @check_token
     @api.response(200, "Success", user_response_model)
-    @api.doc(
-        responses={
-            200: "{message: User signed up}",
-            400: "{message: user_not_found}",
-        }
-    )
+    @api.doc(responses={404: "{code: NO_USER_FOUND}"})
     def get(self, id):
         user = UserController.load_by_id(id)
         if not user:
             return (
-                {"message": "user_not_found"},
-                400,
+                {"code": "NO_USER_FOUND"},
+                404,
             )
         return user_schema(user), 200
 
     @api.expect(user_model)
     @api.response(200, "Success", user_put_response_model)
+    @api.doc(responses={404: "{code: NO_USER_FOUND}"})
     def put(self, id):
         user = UserController.load_updated(id, **request.json)
+        if not user:
+            return (
+                {"code": "NO_USER_FOUND"},
+                404,
+            )
+
         return (
             {
-                "message": "user_updated",
+                "code": "USER_UPDATED",
                 "data": user_schema(user),
             },
             200,

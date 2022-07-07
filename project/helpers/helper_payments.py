@@ -1,6 +1,7 @@
 import os
 
 import requests
+from project.helpers.helper_logger import Logger
 from project.models.user_payment import UserPayment
 
 PAYMENT_URL = os.getenv("PAYMENT_ENDPOINT", "http://0.0.0.0:7000")
@@ -14,6 +15,9 @@ class PaymentRequester:
             f"{PAYMENT_URL}/wallet",
             headers={"api_payments": API_TOKEN},
         )
+        if response.status_code >= 400:
+            Logger.error(f"Error creating wallet")
+
         return response.json(), response.status_code
 
     @staticmethod
@@ -22,6 +26,9 @@ class PaymentRequester:
             f"{PAYMENT_URL}/wallet/{wallet_id}",
             headers={"api_payments": API_TOKEN},
         )
+        if response.status_code >= 400:
+            Logger.error(f"Error getting address for wallet_id: {wallet_id}")
+
         return response.json(), response.status_code
 
     @staticmethod
@@ -31,6 +38,8 @@ class PaymentRequester:
             json={"senderId": sender_id, "amountInEthers": str(amount_in_ethers)},
             headers={"api_payments": API_TOKEN},
         )
+        if response.status_code >= 400:
+            Logger.error(f"Error depositing {amount_in_ethers} ethers from {sender_id}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -39,6 +48,8 @@ class PaymentRequester:
             f"{PAYMENT_URL}/balance/{wallet_id}",
             headers={"api_payments": API_TOKEN},
         )
+        if response.status_code >= 400:
+            Logger.error(f"Error getting balance for wallet_id: {wallet_id}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -57,3 +68,13 @@ class PaymentRequester:
             ):
                 max_subscription_level = payment.subscription_id
         return max_subscription_level, 200
+
+    @staticmethod
+    def get_all_transactions():
+        response = requests.get(
+            f"{PAYMENT_URL}/transactions",
+            headers={"api_payments": API_TOKEN},
+        )
+        if response.status_code >= 400:
+            Logger.error(f"Error while getting transactions")
+        return response.json(), response.status_code
