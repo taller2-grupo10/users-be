@@ -1,9 +1,10 @@
+from datetime import datetime
 from functools import wraps
 from firebase_admin import auth
 from flask import request
 
 from project.controllers.user_controller import UserController
-from project.helpers.helper_logger import Logger
+import logging
 
 
 def is_valid_token(f):
@@ -15,7 +16,7 @@ def is_valid_token(f):
     def token(*args, **kwargs):
         header = request.headers.get("authorization")
         if not header or not "Bearer" in header:
-             return {"code": "NO_TOKEN_PROVIDED"}, 401
+            return {"code": "NO_TOKEN_PROVIDED"}, 401
         header = header.split()
         if len(header) != 2:
             return {"code": "INVALID_TOKEN_PROVIDED"}, 401
@@ -38,7 +39,7 @@ def check_token(f):
     def token(*args, **kwargs):
         header = request.headers.get("authorization")
         if not header or not "Bearer" in header:
-             return {"code": "NO_TOKEN_PROVIDED"}, 401
+            return {"code": "NO_TOKEN_PROVIDED"}, 401
         header = header.split()
         if len(header) != 2:
             return {"code": "INVALID_TOKEN_PROVIDED"}, 401
@@ -47,14 +48,14 @@ def check_token(f):
             firebase_user = auth.verify_id_token(token)
             local_user = UserController.load_by_uid(firebase_user["uid"])
             if not local_user:
-                Logger.error(
+                logging.error(
                     f"User {firebase_user['uid']} does not exist on DB but has a valid token"
                 )
                 return {"code": "NO_USER_FOUND"}, 404
             request.user = local_user
         except:
             return {"code": "INVALID_TOKEN_PROVIDED"}, 401
-        Logger.info(f"User {request.user.uid} has been authenticated")
+        logging.info(f"User {request.user.uid} has been authenticated")
         return f(*args, **kwargs)
 
     return token

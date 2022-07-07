@@ -1,9 +1,10 @@
+import logging
+
 from flask import jsonify, request
 from flask_restx import Namespace, Resource, fields
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_permissions, check_token, is_valid_token
-from project.helpers.helper_logger import Logger
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
 from project.models.password_reset_request import PasswordResetRequest
@@ -75,26 +76,26 @@ def sign_up(role_id):
     location = request.json.get("location")
     genres = request.json.get("genres")
     if not uid or not name or not location or not genres:
-        Logger.info(
+        logging.info(
             f"Signup: Missing required fields: uid->{uid}, name->{name}, location->{location}, genres->{genres}"
         )
         return {"code": "MISSING_SIGN_UP_PARAMETERS"}, 400
     try:
         user = UserController.load_by_uid(uid)
         if user:
-            Logger.info(f"Signup: User already exists, uid: {uid}")
+            logging.info(f"Signup: User already exists, uid: {uid}")
             return {"code": "EXISTING_USER"}, 400
 
         data = {"uid": uid, "name": name, "location": location, "genres": genres}
 
         response_media, status_code = MediaRequester.post("artists", data)
         if status_code != 201:
-            Logger.error(f"Signup: Error while creating artist, uid: {uid}")
+            logging.error(f"Signup: Error while creating artist, uid: {uid}")
             return {"code": "FAILED_TO_CREATE_USER"}, 400
 
         response_payment, status_code = PaymentRequester.create_wallet()
         if status_code != 201:
-            Logger.error(f"Signup: Error creating wallet, uid: {uid}")
+            logging.error(f"Signup: Error creating wallet, uid: {uid}")
             return {"code": "FAILED_TO_CREATE_USER"}, 400
 
         new_user = UserController.create(
@@ -105,7 +106,7 @@ def sign_up(role_id):
             wallet_id=response_payment["id"],
         )
         if not new_user:
-            Logger.error(f"Signup: Failed to create user, uid: {uid}")
+            logging.error(f"Signup: Failed to create user, uid: {uid}")
             return {"code": "FAILED_TO_CREATE_USER"}, 400
     except ValueError as e:
         return {"code": "FAILED_TO_CREATE_USER"}, 400

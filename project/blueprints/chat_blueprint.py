@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from firebase_admin import db
@@ -7,7 +8,6 @@ from project.blueprints.media_artist_blueprint import ArtistById
 from project.config import Config
 from project.controllers.user_controller import UserController
 from project.helpers.helper_auth import check_token
-from project.helpers.helper_logger import Logger
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_notification import send_notification
 
@@ -59,7 +59,7 @@ def upload_message(sender_uid, recv_uid, message):
         )
         return True
     except:
-        Logger.error(f"Error uploading message to firebase. Chat: {joined_uid}")
+        logging.error(f"Error uploading message to firebase. Chat: {joined_uid}")
         return False
 
 

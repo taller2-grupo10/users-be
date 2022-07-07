@@ -4,8 +4,10 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask import Blueprint
 from flask_restx import Api
+import logging
 
 
+logging.basicConfig(level=logging.INFO)
 db = SQLAlchemy()
 migrate = Migrate()
 cors = CORS()

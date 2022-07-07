@@ -2,7 +2,7 @@ import os
 
 import requests
 
-from project.helpers.helper_logger import Logger
+import logging
 
 API_TOKEN_URL = os.getenv("API_TOKEN_URL")
 API_TOKEN = os.getenv("API_TOKEN")
@@ -18,7 +18,7 @@ class ApiTokenRequester:
             },
         )
         if response.status_code >= 400:
-            Logger.error(f"Error getting API tokens")
+            logging.error(f"Error getting API tokens")
         return response.json(), response.status_code
 
     @staticmethod
@@ -31,7 +31,7 @@ class ApiTokenRequester:
             json={"description": description},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error creating new API token")
+            logging.error(f"Error creating new API token")
         return response.json(), response.status_code
 
     @staticmethod
@@ -43,7 +43,7 @@ class ApiTokenRequester:
             },
         )
         if response.status_code >= 400:
-            Logger.error(f"Error deleting API token: {token}")
+            logging.error(f"Error deleting API token: {token}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -55,5 +55,5 @@ class ApiTokenRequester:
             },
         )
         if response.status_code >= 400:
-            Logger.error(f"Error activating API token: {token}")
+            logging.error(f"Error activating API token: {token}")
         return response.json(), response.status_code

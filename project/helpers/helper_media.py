@@ -3,7 +3,7 @@ import json
 import os
 
 import requests
-from project.helpers.helper_logger import Logger
+import logging
 from project.helpers.helper_payments import PaymentRequester
 
 MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
@@ -28,7 +28,7 @@ class MediaRequester:
             },
         )
         if response.status_code >= 400:
-            Logger.error(
+            logging.error(
                 f"Error getting {endpoint}{subscription_query} - user_id: {user_id}"
             )
         return response.json(), response.status_code
@@ -44,7 +44,7 @@ class MediaRequester:
             json=data,
         )
         if response.status_code >= 400:
-            Logger.error(f"Error posting {endpoint} - data: {data}")
+            logging.error(f"Error posting {endpoint} - data: {data}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -64,7 +64,7 @@ class MediaRequester:
             headers={"api_media": API_TOKEN},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error posting-file {endpoint} - filename: {filename}")
+            logging.error(f"Error posting-file {endpoint} - filename: {filename}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -78,7 +78,7 @@ class MediaRequester:
             json=data,
         )
         if response.status_code >= 400:
-            Logger.error(f"Error putting {endpoint} - data: {data}")
+            logging.error(f"Error putting {endpoint} - data: {data}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -92,5 +92,5 @@ class MediaRequester:
             json={"isDeleted": True},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error deleting {endpoint}")
+            logging.error(f"Error deleting {endpoint}")
         return response.json(), response.status_code

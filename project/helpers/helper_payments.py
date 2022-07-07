@@ -1,7 +1,7 @@
+import logging
 import os
 
 import requests
-from project.helpers.helper_logger import Logger
 from project.models.user_payment import UserPayment
 
 PAYMENT_URL = os.getenv("PAYMENT_ENDPOINT", "http://0.0.0.0:7000")
@@ -16,7 +16,7 @@ class PaymentRequester:
             headers={"api_payments": API_TOKEN},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error creating wallet")
+            logging.error(f"Error creating wallet")
 
         return response.json(), response.status_code
 
@@ -27,7 +27,7 @@ class PaymentRequester:
             headers={"api_payments": API_TOKEN},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error getting address for wallet_id: {wallet_id}")
+            logging.error(f"Error getting address for wallet_id: {wallet_id}")
 
         return response.json(), response.status_code
 
@@ -39,7 +39,9 @@ class PaymentRequester:
             headers={"api_payments": API_TOKEN},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error depositing {amount_in_ethers} ethers from {sender_id}")
+            logging.error(
+                f"Error depositing {amount_in_ethers} ethers from {sender_id}"
+            )
         return response.json(), response.status_code
 
     @staticmethod
@@ -49,7 +51,7 @@ class PaymentRequester:
             headers={"api_payments": API_TOKEN},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error getting balance for wallet_id: {wallet_id}")
+            logging.error(f"Error getting balance for wallet_id: {wallet_id}")
         return response.json(), response.status_code
 
     @staticmethod
@@ -76,5 +78,5 @@ class PaymentRequester:
             headers={"api_payments": API_TOKEN},
         )
         if response.status_code >= 400:
-            Logger.error(f"Error while getting transactions")
+            logging.error(f"Error while getting transactions")
         return response.json(), response.status_code
