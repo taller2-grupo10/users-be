@@ -96,10 +96,17 @@ class Data(Resource):
     @check_token
     @api.response(200, "Success", metrics_model)
     def get(self):
-        from_date = datetime.strptime(request.args.get("from_date"), "%d/%m/%Y")
+        try:
+            from_date = datetime.strptime(request.args.get("from_date"), "%d/%m/%Y")
+        except ValueError:
+            from_date = datetime(year=1970, month=1, day=1)
 
         new_users = {}
+        new_users["password"] = 0
+        new_users["google"] = 0
         recent_logins = {}
+        recent_logins["password"] = 0
+        recent_logins["google"] = 0
         password_resets = count_password_reset_requests(from_date)
         blocked = count_blocked_users()
 
@@ -114,4 +121,5 @@ class Data(Resource):
             "recent_logins": recent_logins,
             "password_resets": password_resets,
             "blocked": blocked,
+            "from_date": from_date.strftime("%d/%m/%Y"),
         }, 200
