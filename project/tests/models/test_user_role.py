@@ -19,3 +19,4 @@ def test_create_user_role(init_database, _db):
     assert user.roles == [role]
     assert role.users == [user]
     assert set(user.permissions) == set(role.permissions)
+    assert user_role.__repr__() == "<UserRole 1 1>"

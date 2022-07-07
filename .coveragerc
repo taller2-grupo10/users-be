@@ -1,0 +1,4 @@
+[run]
+omit = project/tests/*, 
+      project/helpers/*, #No need to run these bc they wrap GET/POST requests
+      project/blueprints/*, #Can't run these bc of firebase check_token wrapper
