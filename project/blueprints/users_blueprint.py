@@ -28,10 +28,14 @@ user_model = api.model(
         "notificationToken": fields.String(
             required=False, description="User notification token"
         ),
+        "name": fields.String(required=False, description="User name"),
+        "location": fields.String(required=False, description="User location"),
+        "genres": fields.List(fields.String, required=False, description="User genres"),
     },
 )
 
 user_response_model = api.inherit("User Response", user_model)
+
 
 user_put_response_model = api.model(
     "User Put Response",
@@ -48,8 +52,12 @@ user_put_response_model = api.model(
 
 def user_schema(user):
     try:
+        artist_data, status_code = MediaRequester.get(f"artists/{user.artist_id}")
+        if status_code != 200:
+            artist_data = None
         email = auth.get_user(user.uid).email
     except:
+        artist_data = None
         email = None
     return {
         "id": user.id,
@@ -63,12 +71,24 @@ def user_schema(user):
         "updated_at": date_to_str(user.updated_at) if user.updated_at else None,
         "email": email,
         "notification_token": user.notification_token,
+        "name": artist_data.get("name") if artist_data else None,
+        "location": artist_data.get("location") if artist_data else None,
+        "genres": artist_data.get("genres") if artist_data else None,
     }
 
 
 @api.route("")
 class Users(Resource):
     @check_token
+    @api.response(
+        200,
+        "Success",
+        fields.List(
+            fields.Nested(
+                user_response_model, required=False, description="List of users"
+            )
+        ),
+    )
     def get(self):
         return [user_schema(user) for user in UserController.load_all()], 200
 

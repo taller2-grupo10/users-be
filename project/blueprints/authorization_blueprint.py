@@ -58,6 +58,12 @@ login_response_model = api.inherit(
         "is_deleted": fields.Boolean(required=False, description="User is deleted"),
         "created_at": fields.DateTime(required=False, description="User created at"),
         "updated_at": fields.DateTime(required=False, description="User updated at"),
+        "notification_token": fields.String(
+            required=False, description="User notification token"
+        ),
+        "name": fields.String(required=False, description="User name"),
+        "location": fields.String(required=False, description="User location"),
+        "genres": fields.List(fields.String, required=False, description="User genres"),
     },
 )
 
