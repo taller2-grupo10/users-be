@@ -103,10 +103,10 @@ class Data(Resource):
 
         new_users = {}
         new_users["password"] = 0
-        new_users["google"] = 0
+        new_users["google.com"] = 0
         recent_logins = {}
         recent_logins["password"] = 0
-        recent_logins["google"] = 0
+        recent_logins["google.com"] = 0
         password_resets = count_password_reset_requests(from_date)
         blocked = count_blocked_users()
 
