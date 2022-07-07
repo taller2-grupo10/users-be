@@ -55,7 +55,6 @@ def check_token(f):
             request.user = local_user
         except:
             return {"code": "INVALID_TOKEN_PROVIDED"}, 401
-        logging.info(f"User {request.user.uid} has been authenticated")
         return f(*args, **kwargs)
 
     return token

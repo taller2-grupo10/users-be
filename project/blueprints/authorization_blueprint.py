@@ -123,6 +123,7 @@ class Login(Resource):
         user = request.user
         if user.notification_token != notification_token:
             UserController._update(user, notification_token=notification_token)
+        logging.info(f"User uid: {user.uid} has logged in")
         return user_schema(user=user), 200
 
 
@@ -147,6 +148,7 @@ class AdminLogin(Resource):
     @api.response(200, "Success", login_response_model)
     def post(self):
         # All the logic is in check_token and check_permissions
+        logging.info(f"Admin uid: {request.user.uid} has logged in")
         return user_schema(user=request.user), 200
 
 
