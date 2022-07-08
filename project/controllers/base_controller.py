@@ -58,6 +58,7 @@ class BaseController:
         Updates the model with new args.
         """
         obj.update(**kwargs)
+        db.session.commit()
 
     @classmethod
     def delete(cls, id: int) -> BaseModel:
