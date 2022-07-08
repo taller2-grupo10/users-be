@@ -26,7 +26,7 @@ cred = credentials.Certificate(
         "databaseURL": Config.FIREBASE_DATABASE_URL,
     }
 )
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app(cred, {"storageBucket": Config.STORAGE_BUCKET})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

@@ -1,13 +1,15 @@
 import base64
 import json
+import logging
 import os
+from io import BytesIO
 
 import requests
-import logging
+from firebase_admin import storage
+from project.helpers.helper_api_token import API_TOKEN
 from project.helpers.helper_payments import PaymentRequester
 
 MEDIA_URL = os.getenv("MEDIA_ENDPOINT", "http://localhost:3000")
-from project.helpers.helper_api_token import API_TOKEN
 
 
 class MediaRequester:
@@ -52,17 +54,22 @@ class MediaRequester:
         filename = json.loads(files["data"])["filename"]
         base64_bytes = files["files"].encode("ascii")
         message_bytes = base64.b64decode(base64_bytes)
+
+        # Firebase storage upload logic
+        try:
+            bucket = storage.bucket()
+            blob = bucket.blob(filename)
+            blob.upload_from_file(BytesIO(message_bytes))
+        except:
+            logging.error(f"Error uploading {filename}")
+            return {"code": "ERROR_UPLOADING_FILE"}, 422
+
         response = requests.post(
             f"{MEDIA_URL}/{endpoint}",
-            files={
-                "files": (
-                    filename,
-                    message_bytes,
-                ),
-                "data": files["data"],
-            },
+            json={"data": files["data"]},
             headers={"api_media": API_TOKEN},
         )
+
         if response.status_code >= 400:
             logging.error(f"Error posting-file {endpoint} - filename: {filename}")
         return response.json(), response.status_code
