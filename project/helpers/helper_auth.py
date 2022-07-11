@@ -52,6 +52,9 @@ def check_token(f):
                     f"User {firebase_user['uid']} does not exist on DB but has a valid token"
                 )
                 return {"code": "NO_USER_FOUND"}, 404
+            if not local_user.active:
+                logging.error(f"User {firebase_user['uid']} is not active")
+                return {"code": "NO_USER_FOUND"}, 404
             request.user = local_user
         except:
             return {"code": "INVALID_TOKEN_PROVIDED"}, 401
