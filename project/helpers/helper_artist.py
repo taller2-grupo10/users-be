@@ -12,16 +12,16 @@ def edit_artist(request, albums, songs, artist):
         artist_name = artist["name"]
         # Modify song artist name if it's the main artist
         if artist_name == song["artists"]["name"]:
-            song_request = {"artist.name": request.json["name"]}
+            song_request = {"artists.name": request.json["name"]}
             _put_song(song_id, song_request)
         # Modify song collaborator name if it's a featured artist
-        elif artist_name in song["artist"]["collaboratorsNames"]:
-            song_collaborators_names = song["artist"]["collaboratorsNames"]
+        elif artist_name in song["artists"]["collaboratorsNames"]:
+            song_collaborators_names = song["artists"]["collaboratorsNames"]
             song_collaborators_names = list(
                 filter(lambda x: x != artist_name, song_collaborators_names)
             )
             song_collaborators_names.append(request.json["name"])
-            song_request = {"artist.collaboratorsNames": song_collaborators_names}
+            song_request = {"artists.collaboratorsNames": song_collaborators_names}
             _put_song(song_id, song_request)
 
 
