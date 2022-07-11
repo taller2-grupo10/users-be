@@ -1,8 +1,10 @@
+from datetime import datetime
 from functools import wraps
 from firebase_admin import auth
 from flask import request
 
 from project.controllers.user_controller import UserController
+import logging
 
 
 def is_valid_token(f):
@@ -12,15 +14,17 @@ def is_valid_token(f):
 
     @wraps(f)
     def token(*args, **kwargs):
-        token = request.headers.get("authorization")
-        if token and "Bearer" in token:
-            token = token.split()[1]
-        else:
-            return {"message": "No token provided"}, 400
+        header = request.headers.get("authorization")
+        if not header or not "Bearer" in header:
+            return {"code": "NO_TOKEN_PROVIDED"}, 401
+        header = header.split()
+        if len(header) != 2:
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
+        token = header[1]
         try:
-            firebase_user = auth.verify_id_token(token)
+            auth.verify_id_token(token)
         except:
-            return {"message": "Invalid token provided."}, 400
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
         return f(*args, **kwargs)
 
     return token
@@ -33,19 +37,24 @@ def check_token(f):
 
     @wraps(f)
     def token(*args, **kwargs):
-        token = request.headers.get("authorization")
-        if token and "Bearer" in token:
-            token = token.split()[1]
-        else:
-            return {"message": "No token provided"}, 400
+        header = request.headers.get("authorization")
+        if not header or not "Bearer" in header:
+            return {"code": "NO_TOKEN_PROVIDED"}, 401
+        header = header.split()
+        if len(header) != 2:
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
+        token = header[1]
         try:
             firebase_user = auth.verify_id_token(token)
             local_user = UserController.load_by_uid(firebase_user["uid"])
             if not local_user:
-                return {"message": "No user found"}, 400
+                logging.error(
+                    f"User {firebase_user['uid']} does not exist on DB but has a valid token"
+                )
+                return {"code": "NO_USER_FOUND"}, 404
             request.user = local_user
         except:
-            return {"message": "Invalid token provided."}, 400
+            return {"code": "INVALID_TOKEN_PROVIDED"}, 401
         return f(*args, **kwargs)
 
     return token
@@ -55,16 +64,13 @@ def check_permissions(permissions_needed):
     def perms(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            try:
-                uid = request.user["uid"]
-                user = UserController.load_by_uid(uid)
-                permissions = user.permissions
+            user = request.user  # user must exist bc check_token is called first
+            permissions = user.permissions
 
-                for permission in permissions_needed:
-                    if permission not in permissions:
-                        return {"message": "User does not have permission"}, 400
-            except:
-                return {"message": "User not found"}, 400
+            for permission in permissions_needed:
+                if permission not in permissions:
+                    return {"code": "INVALID_PERMISSION"}, 401
+
             return f(*args, **kwargs)
 
         return decorated

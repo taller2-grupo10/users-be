@@ -88,7 +88,7 @@ album_delete_response = api.model(
 
 @api.route("")
 class Albums(Resource):
-    # @check_token
+    @check_token
     @api.expect(album_model_upload, album_model)
     @api.response(200, "Success", album_response_model)
     @api.doc(
@@ -107,7 +107,7 @@ class Albums(Resource):
         response, status_code = MediaRequester.post_file("albums", files=request.form)
         return response, status_code
 
-    # @check_token
+    @check_token
     @api.response(200, "Success", album_response_model)
     def get(self):
         response, status_code = MediaRequester.get("albums")
@@ -116,13 +116,13 @@ class Albums(Resource):
 
 @api.route("/id/<id>", doc={"params": {"id": "Album id"}})
 class AlbumsById(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", album_response_model)
     def get(self, id):
         response, status_code = MediaRequester.get(f"albums/{id}")
         return response, status_code
 
-    # @check_token
+    @check_token
     @api.expect(album_put_model)
     @api.response(200, "Success", album_put_response)
     def put(self, id):
@@ -142,7 +142,7 @@ class AlbumsById(Resource):
             200,
         )
 
-    # @check_token
+    @check_token
     @api.response(200, "Success", album_delete_response)
     def delete(self, id):
         songs, status_code = MediaRequester.get(f"songs/albumId/{id}")
@@ -154,14 +154,14 @@ class AlbumsById(Resource):
         album_delete_response, status_code = MediaRequester.delete(f"albums/{id}")
 
         return (
-                {"message": "Album and Songs deleted", "data": album_delete_response},
+            {"message": "Album and Songs deleted", "data": album_delete_response},
             200,
         )
 
 
 @api.route("/artist/<artist_id>", doc={"params": {"artist_id": "Artist id"}})
 class AlbumsByArtist(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", album_response_model)
     def get(self, artist_id):
         response, status_code = MediaRequester.get(f"albums/artistId/{artist_id}")
@@ -171,7 +171,7 @@ class AlbumsByArtist(Resource):
 # Albums by genre name
 @api.route("/genre/<genre_name>", doc={"params": {"genre_name": "Genre name"}})
 class AlbumsByGenre(Resource):
-    # @check_token
+    @check_token
     @api.response(200, "Success", album_response_model)
     def get(self, genre_name):
         response, status_code = MediaRequester.get(f"albums/genre/{genre_name}")
@@ -184,3 +184,17 @@ def _delete_song(song_id):
 
 def _put_song(song_id, request):
     return MediaRequester.put(f"songs/{song_id}", data=request)
+
+
+@api.route(
+    "/subscription/<subscriptionLevel>",
+    doc={"params": {"subscriptionLevel": "Subscription level"}},
+)
+class AlbumsBySubscriptionLevel(Resource):
+    @check_token
+    @api.response(200, "Success", album_response_model)
+    def get(self, subscriptionLevel):
+        response, status_code = MediaRequester.get(
+            f"albums/subscription/{subscriptionLevel}"
+        )
+        return response, status_code

@@ -1,11 +1,14 @@
-from flask import Blueprint, request
+import logging
+
+from flask import jsonify, request
+from flask_restx import Namespace, Resource, fields
 from project.blueprints.users_blueprint import user_schema
 from project.controllers.user_controller import UserController
-from project.helpers.helper_auth import check_token, is_valid_token
+from project.helpers.helper_auth import check_permissions, check_token, is_valid_token
 from project.helpers.helper_media import MediaRequester
 from project.helpers.helper_payments import PaymentRequester
-from project.models.user_role import ID_SUPERADMIN, ID_ADMIN, ID_USER
-from flask_restx import Namespace, Resource, fields
+from project.models.password_reset_request import PasswordResetRequest
+from project.models.user_role import ID_ADMIN, ID_USER
 
 api = Namespace(
     name="Authorization", path="/auth", description="Authorization related endpoints"
@@ -56,8 +59,58 @@ login_response_model = api.inherit(
         "is_deleted": fields.Boolean(required=False, description="User is deleted"),
         "created_at": fields.DateTime(required=False, description="User created at"),
         "updated_at": fields.DateTime(required=False, description="User updated at"),
+        "notification_token": fields.String(
+            required=False, description="User notification token"
+        ),
+        "name": fields.String(required=False, description="User name"),
+        "location": fields.String(required=False, description="User location"),
+        "genres": fields.List(fields.String, required=False, description="User genres"),
     },
 )
+
+
+def sign_up(role_id):
+    uid = request.json.get("uid")
+    name = request.json.get("name")
+    notification_token = request.json.get("notification_token")
+    location = request.json.get("location")
+    genres = request.json.get("genres")
+    if not uid or not name or not location or not genres:
+        logging.info(
+            f"Signup: Missing required fields: uid->{uid}, name->{name}, location->{location}, genres->{genres}"
+        )
+        return {"code": "MISSING_SIGN_UP_PARAMETERS"}, 400
+    try:
+        user = UserController.load_by_uid(uid)
+        if user:
+            logging.info(f"Signup: User already exists, uid: {uid}")
+            return {"code": "EXISTING_USER"}, 400
+
+        data = {"uid": uid, "name": name, "location": location, "genres": genres}
+
+        response_media, status_code = MediaRequester.post("artists", data)
+        if status_code != 201:
+            logging.error(f"Signup: Error while creating artist, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
+
+        response_payment, status_code = PaymentRequester.create_wallet()
+        if status_code != 201:
+            logging.error(f"Signup: Error creating wallet, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
+
+        new_user = UserController.create(
+            uid=uid,
+            role_id=role_id,
+            artist_id=response_media["_id"],
+            notification_token=notification_token,
+            wallet_id=response_payment["id"],
+        )
+        if not new_user:
+            logging.error(f"Signup: Failed to create user, uid: {uid}")
+            return {"code": "FAILED_TO_CREATE_USER"}, 400
+    except ValueError as e:
+        return {"code": "FAILED_TO_CREATE_USER"}, 400
+    return user_schema(new_user), 201
 
 
 @api.route("/login")
@@ -65,15 +118,12 @@ class Login(Resource):
     @check_token
     @api.expect(login_model)
     @api.response(200, "Success", login_response_model)
-    @api.response(400, "{message: No user found}")
     def post(self):
-        uid = request.json.get("uid")
         notification_token = request.json.get("notification_token")
-        user = UserController.load_by_uid(uid)
-        if not user:
-            return {"message": "No user found"}, 400
-        if notification_token and user.notification_token != notification_token:
+        user = request.user
+        if user.notification_token != notification_token:
             UserController._update(user, notification_token=notification_token)
+        logging.info(f"User uid: {user.uid} has logged in")
         return user_schema(user=user), 200
 
 
@@ -81,37 +131,62 @@ class Login(Resource):
 class Signup(Resource):
     @is_valid_token
     @api.expect(signup_model)
+    @api.response(200, "Success", login_response_model)
     @api.doc(
         responses={
-            200: "{message: User signed up}",
-            400: "{message: User already exists || No uid/name provided || Error while creating User}",
+            400: "{code: MISSING_SIGN_UP_PARAMETERS || EXISTING_USER || FAILED_TO_CREATE_USER}",
         }
     )
     def post(self):
-        uid = request.json.get("uid")
-        name = request.json.get("name")
-        notification_token = request.json.get("notification_token")
-        location = request.json.get("location")
-        genres = request.json.get("genres")
-        if not uid or not name or not location or not genres:
-            return {"message": "No uid/name/location/genres provided"}, 400
-        try:
-            user = UserController.load_by_uid(uid)
-            if user:
-                return {"message": "User already exists"}, 400
+        return sign_up(ID_USER)
 
-            data = {"uid": uid, "name": name, "location": location, "genres": genres}
-            response_media, status_code = MediaRequester.post("artists", data)
-            response_payment, status_code = PaymentRequester.create_wallet()
 
-            new_user = UserController.create(
-                uid=uid,
-                role_id=ID_USER,
-                artist_id=response_media["_id"],
-                notification_token=notification_token,
-                wallet_id=response_payment["id"],
-            )
-        except ValueError as e:
-            print("Error: {}".format(e))
-            return {"message": "Error while creating User"}, 400
-        return response_media, status_code
+@api.route("/login/admin")
+class AdminLogin(Resource):
+    @check_token
+    @check_permissions(["admin_login"])
+    @api.response(200, "Success", login_response_model)
+    def post(self):
+        # All the logic is in check_token and check_permissions
+        logging.info(f"Admin uid: {request.user.uid} has logged in")
+        return user_schema(user=request.user), 200
+
+
+@api.route("/signup/admin")
+class AdminSignup(Resource):
+    @check_token
+    @check_permissions(["admin_creation"])
+    @api.expect(signup_model)
+    @api.response(200, "Success", login_response_model)
+    @api.doc(
+        responses={
+            400: "{code: MISSING_SIGN_UP_PARAMETERS || EXISTING_USER || FAILED_TO_CREATE_USER}",
+        }
+    )
+    def post(self):
+        return sign_up(ID_ADMIN)
+
+
+@api.route("/loggedIn", methods=["GET"])
+class IsLoggedIn(Resource):
+    @check_token
+    @api.response(200, "Success")
+    def get(self):
+        """
+        Endpoint to check if user is still logged in.
+        Used to render pages in front-end.
+        If user is not logged in, "Invalid token provided" answer is returned by @check_token.
+        """
+        return {"code": "LOGGED_IN"}, 200
+
+
+@api.route("/passwordReset/<email>", methods=["POST"])
+class PasswordReset(Resource):
+    @api.response(201, "Success")
+    def post(self, email):
+        """
+        Endpoint to save password reset request.
+        """
+        password_reset = PasswordResetRequest(email)
+        password_reset.save()
+        return {"code": "PASSWORD_REQUEST_SAVED"}, 201

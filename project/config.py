@@ -28,6 +28,7 @@ class Config(object):
     )
     FIREBASE_CLIENT_X509_CERT_URL = os.getenv("FIREBASE_CLIENT_X509_CERT_URL")
     FIREBASE_DATABASE_URL = os.getenv("FIREBASE_DATABASE_URL")
+    STORAGE_BUCKET = os.getenv("STORAGE_BUCKET")
 
 
 class ConfigTest(object):

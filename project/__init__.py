@@ -4,8 +4,10 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask import Blueprint
 from flask_restx import Api
+import logging
 
 
+logging.basicConfig(level=logging.INFO)
 db = SQLAlchemy()
 migrate = Migrate()
 cors = CORS()
@@ -63,6 +65,14 @@ def register_blueprints(app):
     from project.blueprints.subscriptions_blueprint import (
         api as subscriptions_namespace,
     )
+    from project.blueprints.api_token_blueprint import api as api_token_namespace
+    from project.blueprints.admin_media_blueprint import (
+        api as admin_media_namespace,
+    )
+    from project.blueprints.metrics_blueprint import api as metrics_namespace
+    from project.blueprints.media_home_blueprint import (
+        api as media_home_namespace,
+    )
 
     blueprint = Blueprint("api", __name__, url_prefix="/")
 
@@ -70,7 +80,7 @@ def register_blueprints(app):
         blueprint,
         title="Spotifiuby",
         version="0.1",
-        description="Documentation of Spotifiuby",
+        description="Documentation of Spotifiuby Users BE",
         doc="/doc",
     )
 
@@ -85,5 +95,9 @@ def register_blueprints(app):
     api_extension.add_namespace(payments_namespace)
     api_extension.add_namespace(chat_namespace)
     api_extension.add_namespace(subscriptions_namespace)
+    api_extension.add_namespace(api_token_namespace)
+    api_extension.add_namespace(admin_media_namespace)
+    api_extension.add_namespace(metrics_namespace)
+    api_extension.add_namespace(media_home_namespace)
 
     app.register_blueprint(blueprint)

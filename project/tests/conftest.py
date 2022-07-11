@@ -1,8 +1,11 @@
 import pytest
 from flask import testing
 from project import create_app, db
-from werkzeug.datastructures import Headers
+from project.models.role import Role
+from project.models.subscription import Subscription
 from project.models.user import User
+from project.models.user_role import UserRole
+from werkzeug.datastructures import Headers
 
 """
 How to use pytest.fixture defined here:
@@ -67,6 +70,30 @@ def user(_db):
     _db.session.add(user)
     _db.session.commit()
     return user
+
+
+@pytest.fixture(scope="function")
+def role(_db):
+    role = Role(name="Admin", permissions=["admin", "edit", "view"])
+    _db.session.add(role)
+    _db.session.commit()
+    return role
+
+
+@pytest.fixture(scope="function")
+def subscription(_db):
+    subscription = Subscription(name="Test Sub", price_in_ethers=1.0)
+    _db.session.add(subscription)
+    _db.session.commit()
+    return subscription
+
+
+@pytest.fixture(scope="function")
+def user_role(_db, user, role):
+    user_role = UserRole(user=user, role=role)
+    _db.session.add(user_role)
+    _db.session.commit()
+    return user_role
 
 
 ### Fixture defines ###
