@@ -164,7 +164,9 @@ class AlbumsByArtist(Resource):
     @check_token
     @api.response(200, "Success", album_response_model)
     def get(self, artist_id):
-        response, status_code = MediaRequester.get(f"albums/artistId/{artist_id}")
+        response, status_code = MediaRequester.get(
+            f"albums/artistId/{artist_id}", user_id=request.user.id
+        )
         return response, status_code
 
 
@@ -174,7 +176,9 @@ class AlbumsByGenre(Resource):
     @check_token
     @api.response(200, "Success", album_response_model)
     def get(self, genre_name):
-        response, status_code = MediaRequester.get(f"albums/genre/{genre_name}")
+        response, status_code = MediaRequester.get(
+            f"albums/genre/{genre_name}", user_id=request.user.id
+        )
         return response, status_code
 
 
